@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.media3.exoplayer.ExoPlayer;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private List<Item> itemList;
-    private Context context;
+    private final Context context;
     private String currentSongPath = null; // Stores the path of the currently playing song
 
 
@@ -74,11 +73,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @Override
     public int getItemCount() {
         return itemList.size();
-    }
-
-    private String formatTime(long millis) {
-        return String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(millis),
-                TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {

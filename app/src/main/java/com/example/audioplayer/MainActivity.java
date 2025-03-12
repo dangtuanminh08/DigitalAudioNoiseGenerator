@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity{
         }).attach();
 
         if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{READ_MEDIA_AUDIO}, MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO);
+            ActivityCompat.requestPermissions(this, permissionList, MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO);
         } else {
             listMusicFiles(songList);
         }

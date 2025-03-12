@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,15 +29,12 @@ import pl.droidsonroids.gif.GifImageView;
 
 @UnstableApi
 public class PlayerActivity extends AppCompatActivity {
-    private int position;
     private int repeatState;
     private int shuffleState;
     private ItemAdapter itemAdapter;
     private ExoPlayer player;
-    private PlayerView playerView;
     private static ArrayList<String> queue;
     private TextView songTitle, artistName, currentTime, totalTime;
-    private ImageView songDisplay;
     private SeekBar seekBar;
     private ImageButton btnNext, btnPrev, btnShuffle, btnRepeat;
     private GifImageView btnPlayPause;
@@ -53,11 +49,11 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
 
 
-        position = 0;
         repeatState = 0;
         shuffleState =0;
         itemAdapter = new ItemAdapter(tabViewFragment.getMainContext(), new ArrayList<>());
-        playerView = findViewById(R.id.player_view);
+        findViewById(R.id.player_view);
+        PlayerView playerView;
         songTitle = findViewById(R.id.song_title);
         artistName = findViewById(R.id.artist_name);
         seekBar = findViewById(R.id.seek_bar);
@@ -68,10 +64,9 @@ public class PlayerActivity extends AppCompatActivity {
         btnPrev = findViewById(R.id.btn_prev);
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnRepeat = findViewById(R.id.btn_repeat);
-        songDisplay = findViewById(R.id.album_art);
 
-        GifDrawable playGif = null;
-        GifDrawable pauseGif = null;
+        GifDrawable playGif;
+        GifDrawable pauseGif;
         try {
             playGif = new GifDrawable(getResources(), R.drawable.play);
             pauseGif = new GifDrawable(getResources(), R.drawable.pause);
