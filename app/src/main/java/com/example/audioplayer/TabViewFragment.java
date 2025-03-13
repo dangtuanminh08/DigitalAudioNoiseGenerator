@@ -31,9 +31,6 @@ public class TabViewFragment extends Fragment {
         return fragment;
     }
 
-    public Context getMainContext() {
-        return context;
-    }
 
     @Nullable
     @Override

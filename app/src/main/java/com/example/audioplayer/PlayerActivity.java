@@ -31,7 +31,6 @@ import pl.droidsonroids.gif.GifImageView;
 public class PlayerActivity extends AppCompatActivity {
     private static ArrayList<String> queue;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final TabViewFragment tabViewFragment = new TabViewFragment();
     private int repeatState;
     private int shuffleState;
     private ExoPlayer player;
