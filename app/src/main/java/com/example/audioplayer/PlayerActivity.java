@@ -12,8 +12,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.media3.common.MediaItem;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -29,18 +29,27 @@ import pl.droidsonroids.gif.GifImageView;
 
 @UnstableApi
 public class PlayerActivity extends AppCompatActivity {
-    private int repeatState;
-    private int shuffleState;
-    private ItemAdapter itemAdapter;
-    private ExoPlayer player;
     private static ArrayList<String> queue;
-    private TextView songTitle, artistName, currentTime, totalTime;
-    private SeekBar seekBar;
-    private ImageButton btnNext, btnPrev, btnShuffle, btnRepeat;
-    private GifImageView btnPlayPause;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final TabViewFragment tabViewFragment = new TabViewFragment();
-
+    private int repeatState;
+    private int shuffleState;
+    private ExoPlayer player;
+    private TextView songTitle, artistName, currentTime, totalTime;
+    private SeekBar seekBar;
+    private final Runnable updateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (player != null && player.isPlaying()) {
+                long currentPosition = player.getCurrentPosition();
+                seekBar.setProgress((int) currentPosition);
+                currentTime.setText(formatTime(currentPosition));
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
+    private ImageButton btnNext, btnPrev, btnShuffle, btnRepeat;
+    private GifImageView btnPlayPause;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -48,10 +57,8 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-
         repeatState = 0;
-        shuffleState =0;
-        itemAdapter = new ItemAdapter(tabViewFragment.getMainContext(), new ArrayList<>());
+        shuffleState = 0;
         findViewById(R.id.player_view);
         PlayerView playerView;
         songTitle = findViewById(R.id.song_title);
@@ -110,8 +117,8 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
         btnNext.setOnClickListener(v -> {
-            if (player.getCurrentMediaItemIndex() == queue.size()-1) {
-                player.seekTo(0,0);
+            if (player.getCurrentMediaItemIndex() == queue.size() - 1) {
+                player.seekTo(0, 0);
                 player.play();
             } else {
                 player.seekToNextMediaItem();
@@ -134,18 +141,16 @@ public class PlayerActivity extends AppCompatActivity {
 
 
         btnRepeat.setOnClickListener(v -> {
-            repeatState+=1;
+            repeatState += 1;
             if (repeatState == 1) {
                 player.setRepeatMode(Player.REPEAT_MODE_ALL);
                 btnRepeat.setImageResource(R.drawable.repeat);
                 Toast.makeText(this, "Repeat queue", Toast.LENGTH_SHORT).show();
-            }
-            else if (repeatState == 2) {
+            } else if (repeatState == 2) {
                 player.setRepeatMode(Player.REPEAT_MODE_ONE);
                 btnRepeat.setImageResource(R.drawable.repeat_one);
                 Toast.makeText(this, "Repeat song", Toast.LENGTH_SHORT).show();
-            }
-            else {
+            } else {
                 player.setRepeatMode(Player.REPEAT_MODE_OFF);
                 repeatState = 0;
                 btnRepeat.setImageResource(R.drawable.order);
@@ -155,14 +160,13 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
         btnShuffle.setOnClickListener(v -> {
-            shuffleState+=1;
-            if(shuffleState == 1) {
+            shuffleState += 1;
+            if (shuffleState == 1) {
                 player.setShuffleModeEnabled(true);
                 btnShuffle.setImageResource(R.drawable.shuffle);
                 btnShuffle.setColorFilter(Color.argb(255, 255, 255, 255));
                 Toast.makeText(this, "Shuffle ON", Toast.LENGTH_SHORT).show();
-            }
-            else {
+            } else {
                 player.setShuffleModeEnabled(false);
                 btnRepeat.setImageResource(R.drawable.order);
                 btnShuffle.setColorFilter(Color.argb(255, 186, 186, 186));
@@ -213,36 +217,33 @@ public class PlayerActivity extends AppCompatActivity {
                     player.seekTo(progress);
                 }
             }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
     }
 
     private void updateSongHighlight() {
-        Log.d("ItemAdapter", "Updated");
-        String currentSongPath = queue.get(player.getCurrentMediaItemIndex());
-        itemAdapter.getSong(currentSongPath);
+        if (player != null) {
+            String currentSongPath = queue.get(player.getCurrentMediaItemIndex());
+            Log.d("DEBUG", "Updating highlight for: " + currentSongPath);
+
+            // Send the new song path back to MainActivity
+            Intent intent = new Intent();
+            intent.putExtra("CURRENT_SONG", currentSongPath);
+            setResult(RESULT_OK, intent);
+        }
     }
+
     private void startUpdatingSeekBar() {
         handler.post(updateRunnable);
     }
-
-    private final Runnable updateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (player != null && player.isPlaying()) {
-                long currentPosition = player.getCurrentPosition();
-                seekBar.setProgress((int) currentPosition);
-                currentTime.setText(formatTime(currentPosition));
-                handler.postDelayed(this, 1000);
-            }
-        }
-    };
-
 
     private String formatTime(long millis) {
         return String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(millis),

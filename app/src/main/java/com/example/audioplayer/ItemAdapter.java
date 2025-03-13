@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
@@ -28,14 +27,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         this.itemList = itemList;
     }
 
-    public void ReturnSong(String songName, View v) {
-        MainActivity.playSong(songName, v.getContext());
-        getSong(songName); // Update current song index!
+    public void returnSong(String songPath, View v) {
+        MainActivity.playSong(songPath, v.getContext());
+        updateCurrentSong(songPath); // Update current song index!
     }
 
-    public void getSong(String songPath) {
-        currentSongPath = songPath;  // Update the song path
-        notifyDataSetChanged(); // Refresh RecyclerView
+    public void updateCurrentSong(String songPath) {
+        currentSongPath = songPath;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -58,14 +57,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         holder.itemView.setOnClickListener(v -> {
             String itemName = item.getTitle();
             String itemDescription = item.getArtist();
-            ReturnSong(itemName, v);
+            returnSong(itemName, v);
         });
 
         if (item.getTitle().equals(currentSongPath)) {
-            Log.d("ItemAdapter", "Set");
+            Log.d("ItemAdapter", "Current: " + item.getTitle());
             holder.titleTextView.setTextColor(ContextCompat.getColor(context, R.color.purple_200));
         } else {
-            Log.d("ItemAdapter", "Not set");
             holder.titleTextView.setTextColor(ContextCompat.getColor(context, R.color.white));
         }
     }
