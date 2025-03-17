@@ -1,6 +1,6 @@
-## Digital Audio/Noise Generator ! (DANG!) 📼
-This project is an app that is programmed to play audio files--specifically music.\
-I made this for myself... because I really hate ads on other audio players.
+## Digital Audio/Noise Generator! (DANG!) 📼
+This project is an Android app that is programmed to play audio files--specifically music.\
+I made this for myself because I really hate ads on other audio players.
 
 ### Current Features ‼️‼️
 - Repeat modes
@@ -13,11 +13,6 @@ I made this for myself... because I really hate ads on other audio players.
 - Notification with controls
 - Change names of/delete files
 - More Hello Kitty...
-
-### Bugs I Know Of 😢
-- Song title doesn't change colour accordingly
-- Total time displays a long negative number when skipping forward\
-  (Only when loading a song for the first time)
 
 #### Dev Info 
 - My phone: Google Pixel 4a
