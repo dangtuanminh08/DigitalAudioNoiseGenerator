@@ -15,12 +15,17 @@ I made this for myself because I really hate ads on other audio players.
 - More Hello Kitty...
 
 #### Dev Updates:
-HEY!!! Sorry for the lack of update! I have been very busy with FRC (proud to be on Team 6632) for the past few weeks.\
-However, last week, I came back to the code, read it, and I finally realized how stupid the code was.\
-So now I've been LOCKED IN, deep in the trenches, redoing... literally everything. This time, following the MVVM architecture (model-view-viewmodel). Everything should be easier for me to understand and build on... and for you too!\
-Expect the rewrite **mid to late April.**
+So... I finished WAY earlier than I expected. I honestly thought it would be harder than how it was.\
+The app now follows MVVM (Model - View - Viewmodel) architecture.\
+![Diagram](https://www.avanderlee.com/wp-content/uploads/2024/05/MVVM-architectural-pattern-swiftui.jpg)
+Essentially what MVVM does is it distinctively seperates the UI from the actual logic behind the curtain, which is WAY better compared to before, where some of my classes were working with both.\
+With this new architecture, I am abstracting more AND it is way easier to follow. I'm so happy yay yay yay!!!\
+Hopefully you also find the code easier to follow.\
+I even had time to fix the highlighting issue! Isn't that crazy?\
+I also added a transition into PlayerActivity from the miniplayer.\
+Anyways, I have three tests to study for so I'm just gonna lea
 
->Updated Apr 7th 2025\
+>Updated Apr 8th 2025\
 >P.S. If someone knows anywhere else that's better to put these kind of updates/blogs, please let me know...
 
 #### Dev Info 
