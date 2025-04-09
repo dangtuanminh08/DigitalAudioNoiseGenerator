@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -31,8 +30,6 @@ import pl.droidsonroids.gif.GifImageView;
 public class PlayerActivity extends AppCompatActivity {
     private static ArrayList<String> queue;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private int repeatState;
-    private int shuffleState;
     private ExoPlayer player;
     private TextView songTitle, artistName, currentTime, totalTime;
     private SeekBar seekBar;
@@ -47,6 +44,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
     };
+
     private ImageButton btnNext, btnPrev, btnShuffle, btnRepeat;
     private GifImageView btnPlayPause;
 
@@ -56,8 +54,6 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        repeatState = 0;
-        shuffleState = 0;
         findViewById(R.id.player_view);
         PlayerView playerView;
         songTitle = findViewById(R.id.song_title);
@@ -71,6 +67,10 @@ public class PlayerActivity extends AppCompatActivity {
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnRepeat = findViewById(R.id.btn_repeat);
 
+        /*
+        Android Studio told me to do all of this and I'm not sure why.
+        But if it works it works!
+        */
         GifDrawable playGif;
         GifDrawable pauseGif;
         try {
@@ -83,23 +83,46 @@ public class PlayerActivity extends AppCompatActivity {
         GifDrawable finalPlayGif = playGif;
         GifDrawable finalPauseGif = pauseGif;
 
-
         player = PlayerManager.getPlayer(this);
         playerView = findViewById(R.id.player_view);
         playerView.setPlayer(player);
 
         ImageButton backButton = findViewById(R.id.back_button);
 
+        //The intent from ItemAdapter
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("SONGS")) {
             queue = intent.getStringArrayListExtra("SONGS");
-            PlayerManager.playSong(queue);
+            int currentIndex = intent.getIntExtra("CURRENT_INDEX", 0);
+
+            if (PlayerManager.getPlayer(this).getCurrentMediaItemIndex() != currentIndex) {
+                PlayerManager.playSong(queue);
+                PlayerManager.getPlayer(this).seekTo(currentIndex, 0);
+            } else {
+                setPlayerDisplayText();
+            }
         }
 
+        //If only there were a word... that told the reader what this function does...
         backButton.setOnClickListener(v -> {
-            finish(); //exits
+            finish();
         });
 
+        // Keeping repeat/shuffle button states even after exiting the activity.
+        if (player.getRepeatMode() == Player.REPEAT_MODE_ONE) {
+            player.setRepeatMode(Player.REPEAT_MODE_ONE);
+            btnRepeat.setImageResource(R.drawable.repeat_one);
+
+        } else if (player.getRepeatMode() == Player.REPEAT_MODE_ALL) {
+            player.setRepeatMode(Player.REPEAT_MODE_ALL);
+            btnRepeat.setImageResource(R.drawable.repeat);
+
+        } else {
+            player.setRepeatMode(Player.REPEAT_MODE_OFF);
+            btnRepeat.setImageResource(R.drawable.order);
+        }
+
+        //Media button functionality (play, pause, next, previous, shuffle, repeat)
         btnPlayPause.setOnClickListener(v -> {
             if (player.isPlaying()) {
                 player.pause();
@@ -138,55 +161,49 @@ public class PlayerActivity extends AppCompatActivity {
             updateSongHighlight();
         });
 
+        if (player.getShuffleModeEnabled()) {
+            player.setShuffleModeEnabled(true);
+            btnShuffle.setColorFilter(Color.argb(255, 255, 255, 255));
+        } else {
+            player.setShuffleModeEnabled(false);
+            btnShuffle.setColorFilter(Color.argb(255, 186, 186, 186));
+        }
 
         btnRepeat.setOnClickListener(v -> {
-            repeatState += 1;
-            if (repeatState == 1) {
+            if (player.getRepeatMode() == Player.REPEAT_MODE_OFF) {
                 player.setRepeatMode(Player.REPEAT_MODE_ALL);
                 btnRepeat.setImageResource(R.drawable.repeat);
                 Toast.makeText(this, "Repeat queue", Toast.LENGTH_SHORT).show();
-            } else if (repeatState == 2) {
+            } else if (player.getRepeatMode() == Player.REPEAT_MODE_ALL) {
                 player.setRepeatMode(Player.REPEAT_MODE_ONE);
                 btnRepeat.setImageResource(R.drawable.repeat_one);
                 Toast.makeText(this, "Repeat song", Toast.LENGTH_SHORT).show();
             } else {
                 player.setRepeatMode(Player.REPEAT_MODE_OFF);
-                repeatState = 0;
                 btnRepeat.setImageResource(R.drawable.order);
                 Toast.makeText(this, "Repeat off", Toast.LENGTH_SHORT).show();
-
             }
         });
 
         btnShuffle.setOnClickListener(v -> {
-            shuffleState += 1;
-            if (shuffleState == 1) {
+            if (!player.getShuffleModeEnabled()) {
                 player.setShuffleModeEnabled(true);
                 btnShuffle.setImageResource(R.drawable.shuffle);
                 btnShuffle.setColorFilter(Color.argb(255, 255, 255, 255));
                 Toast.makeText(this, "Shuffle ON", Toast.LENGTH_SHORT).show();
             } else {
                 player.setShuffleModeEnabled(false);
-                btnRepeat.setImageResource(R.drawable.order);
                 btnShuffle.setColorFilter(Color.argb(255, 186, 186, 186));
-                shuffleState = 0;
                 Toast.makeText(this, "Shuffle OFF", Toast.LENGTH_SHORT).show();
             }
         });
 
+        //Checks for song change in order to update text views.
         player.addListener(new androidx.media3.common.Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int state) {
                 if (state == androidx.media3.common.Player.STATE_READY) {
-                    String songPath = queue.get(player.getCurrentMediaItemIndex());
-                    File file = new File(songPath);
-                    String songName = file.getName();
-                    songTitle.setText(songName.replaceFirst("[.][^.]+$", ""));
-                    artistName.setText("Unknown Artist");
-                    long duration = player.getDuration();
-                    seekBar.setMax((int) duration);
-                    totalTime.setText(formatTime(duration));
-                    startUpdatingSeekBar();
+                    setPlayerDisplayText();
                     updateSongHighlight();
                 }
                 if (state == androidx.media3.common.Player.STATE_ENDED) {
@@ -195,20 +212,13 @@ public class PlayerActivity extends AppCompatActivity {
             }
 
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
-                String songPath = queue.get(player.getCurrentMediaItemIndex());
-                File file = new File(songPath);
-                String songName = file.getName();
-                songTitle.setText(songName.replaceFirst("[.][^.]+$", ""));
-                artistName.setText("Unknown Artist");
-                long duration = player.getDuration();
-                seekBar.setMax((int) duration);
-                totalTime.setText(formatTime(duration));
-                startUpdatingSeekBar();
+                setPlayerDisplayText();
                 updateSongHighlight();
             }
 
         });
 
+        //Checks if the seekbar is being dragged.
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -228,22 +238,34 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
+    //Part of the highlight updating (which doesn't work)
     private void updateSongHighlight() {
         if (player != null) {
             String currentSongPath = queue.get(player.getCurrentMediaItemIndex());
-            Log.d("DEBUG", "Updating highlight for: " + currentSongPath);
 
-            // Send the new song path back to MainActivity
             Intent intent = new Intent();
             intent.putExtra("CURRENT_SONG", currentSongPath);
             setResult(RESULT_OK, intent);
         }
     }
 
+    //Changes the text views to reflect the data of the currently playing song.
+    private void setPlayerDisplayText() {
+        String songPath = queue.get(player.getCurrentMediaItemIndex());
+        File file = new File(songPath);
+        String songName = file.getName();
+        songTitle.setText(songName.replaceFirst("[.][^.]+$", ""));
+        artistName.setText("Unknown Artist");
+        long duration = player.getDuration();
+        seekBar.setMax((int) duration);
+        totalTime.setText(formatTime(duration));
+        startUpdatingSeekBar();
+    }
     private void startUpdatingSeekBar() {
         handler.post(updateRunnable);
     }
 
+    //Converts milliseconds to minutes and seconds.
     private String formatTime(long millis) {
         return String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(millis),
                 TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
@@ -252,6 +274,5 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //not released because we want it to keep playing!!
     }
 }

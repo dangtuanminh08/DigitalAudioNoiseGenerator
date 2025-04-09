@@ -2,17 +2,17 @@ package com.example.audioplayer;
 
 import android.content.Context;
 import android.media.session.MediaSession;
-import android.net.Uri;
 
 import androidx.media3.common.MediaItem;
 import androidx.media3.exoplayer.ExoPlayer;
 
-import java.io.File;
 import java.util.ArrayList;
 
+//"Global" instance of the ExoPlayer.
 public class PlayerManager {
     private static ExoPlayer player;
     private static MediaSession mediaSession;
+    private static ArrayList<String> queue = new ArrayList<>();
 
     public static ExoPlayer getPlayer(Context context) {
         if (player == null) {
@@ -24,14 +24,23 @@ public class PlayerManager {
     }
 
     public static void playSong(ArrayList<String> queue) {
-        if (player != null) {
-            player.clearMediaItems();
-            for (String item : queue) {
-                Uri fileUri = Uri.fromFile(new File(item));
-                player.addMediaItem(MediaItem.fromUri(fileUri));
-            }
-            player.prepare();
-            player.setPlayWhenReady(true);
+        PlayerManager.queue = queue;
+        player.clearMediaItems();
+        for (String path : queue) {
+            MediaItem mediaItem = MediaItem.fromUri(path);
+            player.addMediaItem(mediaItem);
         }
+        player.prepare();
+    }
+
+    public static ArrayList<String> getQueue() {
+        return queue;
+    }
+
+    public static int getCurrentSongIndex() {
+        if (player != null) {
+            return player.getCurrentMediaItemIndex();
+        }
+        return -1;
     }
 }

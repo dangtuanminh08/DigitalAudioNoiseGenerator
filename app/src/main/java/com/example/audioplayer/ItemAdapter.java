@@ -1,71 +1,63 @@
 package com.example.audioplayer;
 
-import android.content.Context;
-import android.util.Log;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.File;
 import java.util.List;
 
-public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
+public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> {
 
-    private List<Item> itemList;
-    private final Context context;
-    private String currentSongPath = null; // Stores the path of the currently playing song
+    private final List<Item> itemList;
+    private final OnSongClickListener listener;
+    private int selectedPosition = -1;
 
+    public interface OnSongClickListener {
+        void onSongClick(String songName, String songArtist);
+    }
 
-
-    public ItemAdapter(Context context, List<Item> itemList) {
-        this.context = context;
+    public ItemAdapter(List<Item> itemList, OnSongClickListener listener) {
         this.itemList = itemList;
-    }
-
-    public void returnSong(String songPath, View v) {
-        MainActivity.playSong(songPath, v.getContext());
-        updateCurrentSong(songPath); // Update current song index!
-    }
-
-    public void updateCurrentSong(String songPath) {
-        currentSongPath = songPath;
-        notifyDataSetChanged();
+        this.listener = listener;
     }
 
     @NonNull
     @Override
-    public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the item layout (take XML and parse it to create view from elements)
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_layout, parent, false);
-
-        return new ItemViewHolder(view);
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_layout, parent, false); // Replace item_layout with your layout file
+        return new MyViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
-        Item item = itemList.get(position);
-        String fileName = new File(item.getTitle()).getName();
-        String songName = fileName.replaceFirst("[.][^.]+$", "");
-        holder.titleTextView.setText(songName);
-        holder.artistTextView.setText(item.getArtist());
-        holder.itemView.setOnClickListener(v -> {
-            String itemName = item.getTitle();
-            String itemDescription = item.getArtist();
-            returnSong(itemName, v);
-        });
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        Item currentItem = itemList.get(position);
+        holder.titleTextView.setText(currentItem.getTitle());
+        holder.artistTextView.setText(currentItem.getArtist());
 
-        if (item.getTitle().equals(currentSongPath)) {
-            Log.d("ItemAdapter", "Current: " + item.getTitle());
-            holder.titleTextView.setTextColor(ContextCompat.getColor(context, R.color.purple_200));
+        if (position == selectedPosition) {
+            holder.titleTextView.setTextColor(Color.rgb(255, 150, 255));
         } else {
-            holder.titleTextView.setTextColor(ContextCompat.getColor(context, R.color.white));
+            holder.titleTextView.setTextColor(Color.WHITE);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            int previousSelectedPosition = selectedPosition;
+            selectedPosition = holder.getLayoutPosition();
+            notifyItemChanged(previousSelectedPosition);
+            notifyItemChanged(selectedPosition);
+
+            String itemName = currentItem.getTitle();
+            String itemArtist = currentItem.getArtist();
+            if (listener != null) {
+                listener.onSongClick(itemName, itemArtist);
+            }
+        });
     }
 
     @Override
@@ -73,13 +65,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         return itemList.size();
     }
 
-    public static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView titleTextView, artistTextView;
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
+        public TextView titleTextView;
+        public TextView artistTextView;
 
-        public ItemViewHolder(@NonNull View itemView) {
+        public MyViewHolder(View itemView) {
             super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            artistTextView = itemView.findViewById(R.id.artistTextView);
+            titleTextView = itemView.findViewById(R.id.titleTextView); // Replace item_title with your view ID
+            artistTextView = itemView.findViewById(R.id.artistTextView); // Replace item_artist with your view ID
         }
     }
 }

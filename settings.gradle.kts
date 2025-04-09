@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AudioPlayer"
+rootProject.name = "DANG"
 include(":app")
  

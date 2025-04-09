@@ -7,23 +7,17 @@ import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
     private final ArrayList<Item> songs;
     private final ArrayList<Item> playlists;
 
-    public ViewPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle, ArrayList<String> songList) {
+    public ViewPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle, List<Item> songs, List<Item> playlists) {
         super(fragmentManager, lifecycle);
-
-        songs = new ArrayList<>();
-        for (String song : songList) {
-            Item item = new Item(song, "Description");
-            songs.add(item);
-        }
-
-        playlists = new ArrayList<>();
-        playlists.add(new Item("In Development", "In Development"));
+        this.songs = (ArrayList<Item>) songs;
+        this.playlists = (ArrayList<Item>) playlists;
     }
 
     @NonNull

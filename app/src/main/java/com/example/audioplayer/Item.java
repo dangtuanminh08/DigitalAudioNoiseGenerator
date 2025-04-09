@@ -4,6 +4,22 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Item implements Parcelable {
+    private final String title;
+    private final String artist;
+    private final String path;
+
+    public Item(String title, String artist, String path) {
+        this.title = title;
+        this.artist = artist;
+        this.path = path;
+    }
+
+    protected Item(Parcel in) {
+        title = in.readString();
+        artist = in.readString();
+        path = in.readString();
+    }
+
     public static final Creator<Item> CREATOR = new Creator<Item>() {
         @Override
         public Item createFromParcel(Parcel in) {
@@ -15,18 +31,6 @@ public class Item implements Parcelable {
             return new Item[size];
         }
     };
-    private final String title;
-    private final String artist;
-
-    public Item(String title, String artist) {
-        this.title = title;
-        this.artist = artist;
-    }
-
-    protected Item(Parcel in) {
-        title = in.readString();
-        artist = in.readString();
-    }
 
     public String getTitle() {
         return title;
@@ -34,6 +38,10 @@ public class Item implements Parcelable {
 
     public String getArtist() {
         return artist;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     @Override
@@ -45,5 +53,6 @@ public class Item implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(title);
         dest.writeString(artist);
+        dest.writeString(path);
     }
 }
