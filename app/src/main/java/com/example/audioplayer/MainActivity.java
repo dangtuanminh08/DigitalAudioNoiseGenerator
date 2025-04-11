@@ -2,10 +2,12 @@ package com.example.audioplayer;
 
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.session.MediaSession;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -13,8 +15,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
@@ -32,15 +36,16 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 
+@RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSongClickListener {
 
     private ItemAdapter adapter;
@@ -52,9 +57,10 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     private final String[] permissionList = {READ_MEDIA_AUDIO};
     private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO = 0;
     private LinearLayout miniPlayer;
-    private TextView miniSongTitle;
+    private TextView miniSongTitle, miniSongArtist;
     private GifImageView miniPlayPause;
 
+    @SuppressLint("NotifyDataSetChanged")
     @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,11 +100,12 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
             songs.addAll(items);
             adapter.notifyDataSetChanged();
             TextView testTextView = findViewById(R.id.textView);
-            testTextView.setText(String.format("Number of songs: %d", songs.size()));
+            testTextView.setText(String.format(Locale.CANADA, "Number of songs: %d", songs.size()));
         });
 
         miniPlayer = findViewById(R.id.mini_player);
         miniSongTitle = findViewById(R.id.mini_song_title);
+        miniSongArtist = findViewById(R.id.mini_song_artist);
         miniPlayPause = findViewById(R.id.mini_play_pause);
 
         GifDrawable playGif;
@@ -159,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     If permission is denied, the app will request every time it is opened until permission is granted.
     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -177,11 +184,10 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
 
     private void updateMiniPlayer() {
         if (player.getCurrentMediaItem() != null) {
-            String songPath = PlayerManager.getQueue().get(player.getCurrentMediaItemIndex());
-            File file = new File(songPath);
-            String songName = file.getName().replaceFirst("[.][^.]+$", "");
+            Item currentItem = songs.get(player.getCurrentMediaItemIndex());
 
-            miniSongTitle.setText(songName);
+            miniSongTitle.setText(currentItem.getTitle());
+            miniSongArtist.setText(currentItem.getArtist());
             miniPlayer.setVisibility(View.VISIBLE); // Shows mini player when a song is playing
 
             if (player.isPlaying()) {
@@ -212,3 +218,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         }
     }
 }
+
+//Add pop-up menu in player
+//Make speed/pitch menu

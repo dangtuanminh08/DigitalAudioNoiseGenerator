@@ -38,7 +38,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/mini_artist_title"
+                android:id="@+id/mini_song_artist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Artist • Length"

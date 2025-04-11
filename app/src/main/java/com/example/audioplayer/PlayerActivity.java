@@ -21,6 +21,7 @@ import androidx.media3.ui.PlayerView;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import pl.droidsonroids.gif.GifDrawable;
@@ -45,7 +46,8 @@ public class PlayerActivity extends AppCompatActivity {
         }
     };
 
-    private ImageButton btnNext, btnPrev, btnShuffle, btnRepeat;
+    private ImageButton btnShuffle;
+    private ImageButton btnRepeat;
     private GifImageView btnPlayPause;
 
     @SuppressLint("MissingInflatedId")
@@ -62,8 +64,8 @@ public class PlayerActivity extends AppCompatActivity {
         currentTime = findViewById(R.id.current_time);
         totalTime = findViewById(R.id.total_time);
         btnPlayPause = findViewById(R.id.btn_play_pause);
-        btnNext = findViewById(R.id.btn_next);
-        btnPrev = findViewById(R.id.btn_prev);
+        ImageButton btnNext = findViewById(R.id.btn_next);
+        ImageButton btnPrev = findViewById(R.id.btn_prev);
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnRepeat = findViewById(R.id.btn_repeat);
 
@@ -104,9 +106,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         //If only there were a word... that told the reader what this function does...
-        backButton.setOnClickListener(v -> {
-            finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
         // Keeping repeat/shuffle button states even after exiting the activity.
         if (player.getRepeatMode() == Player.REPEAT_MODE_ONE) {
@@ -267,8 +267,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     //Converts milliseconds to minutes and seconds.
     private String formatTime(long millis) {
-        return String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(millis),
-                TimeUnit.MILLISECONDS.toSeconds(millis) % 60);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
+        return String.format(Locale.CANADA, "%d:%02d", minutes, seconds);
     }
 
     @Override

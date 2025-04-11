@@ -4,8 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Item implements Parcelable {
-    private final String title;
-    private final String artist;
+    private String title;
+    private String artist;
     private final String path;
 
     public Item(String title, String artist, String path) {
@@ -42,6 +42,14 @@ public class Item implements Parcelable {
 
     public String getPath() {
         return path;
+    }
+
+    public void setTitle(String newTitle) {
+        this.title = newTitle;
+    }
+
+    public void setArtist(String newArtist) {
+        this.artist = newArtist;
     }
 
     @Override

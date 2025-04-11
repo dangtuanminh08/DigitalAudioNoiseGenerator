@@ -7,16 +7,24 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <ImageButton
-        android:id="@+id/back_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="Back"
-        android:src="@android:drawable/ic_menu_close_clear_cancel">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-    </ImageButton>
+        <ImageButton
+            android:id="@+id/back_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="Back"
+            android:src="@android:drawable/ic_menu_close_clear_cancel">
 
+        </ImageButton>
+
+    </LinearLayout>
     <androidx.media3.ui.PlayerView
         android:id="@+id/player_view"
         android:layout_width="match_parent"
