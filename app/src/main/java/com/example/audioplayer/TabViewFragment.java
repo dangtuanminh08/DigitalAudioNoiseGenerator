@@ -37,6 +37,7 @@ public class TabViewFragment extends Fragment implements ItemAdapter.OnSongClick
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        context = getContext();
         View view = inflater.inflate(R.layout.recycler_view, container, false); // Use the same fragment layout for all
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
@@ -47,8 +48,9 @@ public class TabViewFragment extends Fragment implements ItemAdapter.OnSongClick
             itemList = getArguments().getParcelableArrayList(ARG_ITEMS);
         }
 
-        context = getContext();
-        ItemAdapter adapter = new ItemAdapter(itemList, this); // Pass 'this' as the listener
+        recyclerView.setVerticalScrollBarEnabled(false);
+
+        ItemAdapter adapter = new ItemAdapter(itemList, this);
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new TopSpacingItemDecoration(64));
         return view;

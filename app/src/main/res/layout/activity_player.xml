@@ -20,9 +20,35 @@
             android:layout_marginTop="10dp"
             android:background="?attr/selectableItemBackground"
             android:contentDescription="Back"
-            android:src="@android:drawable/ic_menu_close_clear_cancel">
+            android:scaleType="centerInside"
+            android:scaleX="0.6"
+            android:scaleY="0.6"
+            android:src="@drawable/exit">
 
         </ImageButton>
+
+        <ImageButton
+            android:id="@+id/spacer"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:alpha="0"
+            android:contentDescription="Menu"
+            android:src="@drawable/baseline_more_vert_24" />
+
+        <ImageButton
+            android:id="@+id/menuButton_player"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Menu"
+            android:scaleType="centerInside"
+            android:scaleX="1.1"
+            android:scaleY="1.1"
+            android:src="@drawable/baseline_more_vert_24"
+            app:tint="#FFFFFF" />
 
     </LinearLayout>
     <androidx.media3.ui.PlayerView

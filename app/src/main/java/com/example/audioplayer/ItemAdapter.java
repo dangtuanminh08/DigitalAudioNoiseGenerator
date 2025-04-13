@@ -30,7 +30,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_layout, parent, false); // Replace item_layout with your layout file
+                .inflate(R.layout.item_layout, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -71,8 +71,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
 
         public MyViewHolder(View itemView) {
             super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView); // Replace item_title with your view ID
-            artistTextView = itemView.findViewById(R.id.artistTextView); // Replace item_artist with your view ID
+            titleTextView = itemView.findViewById(R.id.titleTextView);
+            artistTextView = itemView.findViewById(R.id.artistTextView);
         }
     }
 }
