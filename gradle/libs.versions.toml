@@ -7,6 +7,8 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
+materialVersion = "1.11.0"
+media = "1.7.0"
 media3ExoplayerDash = "1.5.1"
 
 [libraries]
@@ -17,6 +19,8 @@ ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitV
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+material-v1110 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
+media = { module = "androidx.media:media", version.ref = "media" }
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3ExoplayerDash" }
 media3-exoplayer-dash = { module = "androidx.media3:media3-exoplayer-dash", version.ref = "media3ExoplayerDash" }
 media3-session = { module = "androidx.media3:media3-session", version.ref = "media3ExoplayerDash" }

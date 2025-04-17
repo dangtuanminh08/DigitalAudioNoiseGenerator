@@ -37,7 +37,7 @@
             android:src="@drawable/baseline_more_vert_24" />
 
         <ImageButton
-            android:id="@+id/menuButton_player"
+            android:id="@+id/player_menu"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="10dp"
@@ -62,8 +62,6 @@
         app:player_layout_id="@layout/real_custom_player_view"
         app:show_shuffle_button="true"
         app:use_artwork="true"
-        app:use_controller="true">
-
-    </androidx.media3.ui.PlayerView>
+        app:use_controller="true" />
 
 </LinearLayout>

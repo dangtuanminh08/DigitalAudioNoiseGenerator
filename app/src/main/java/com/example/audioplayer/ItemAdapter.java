@@ -41,7 +41,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         holder.artistTextView.setText(currentItem.getArtist());
 
         if (position == selectedPosition) {
-            holder.titleTextView.setTextColor(Color.rgb(255, 150, 255));
+            holder.titleTextView.setTextColor(Color.argb(255, 255, 120, 190));
         } else {
             holder.titleTextView.setTextColor(Color.WHITE);
         }

@@ -3,9 +3,13 @@ package com.example.audioplayer;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -17,6 +21,8 @@ import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +38,12 @@ public class PlayerActivity extends AppCompatActivity {
     private static ArrayList<String> queue;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private ExoPlayer player;
-    private TextView songTitle, artistName, currentTime, totalTime;
-    private SeekBar seekBar;
+    private TextView songTitle;
+    private TextView artistName;
+    private TextView currentTime;
+    private TextView totalTime;
+    private SeekBar seekBar, speedSeekBar, pitchSeekBar;
+    private BottomSheetDialog playerSettings;
     private final Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -49,14 +59,15 @@ public class PlayerActivity extends AppCompatActivity {
     private ImageButton btnShuffle;
     private ImageButton btnRepeat;
     private GifImageView btnPlayPause;
+    private PlaybackSpeedManager playbackSpeedManager;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-
         findViewById(R.id.player_view);
+
         PlayerView playerView;
         songTitle = findViewById(R.id.song_title);
         artistName = findViewById(R.id.artist_name);
@@ -89,7 +100,17 @@ public class PlayerActivity extends AppCompatActivity {
         playerView = findViewById(R.id.player_view);
         playerView.setPlayer(player);
 
+        playbackSpeedManager = new PlaybackSpeedManager(player);
+
         ImageButton backButton = findViewById(R.id.back_button);
+        ImageButton playerMenu = findViewById(R.id.player_menu);
+
+        if (playerMenu != null) {
+            playerMenu.setOnClickListener(v -> showBottomSheet());
+        } else {
+            Log.e("PlayerActivity", "playerMenu is null");
+        }
+
 
         //The intent from ItemAdapter
         Intent intent = getIntent();
@@ -107,6 +128,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         //If only there were a word... that told the reader what this function does...
         backButton.setOnClickListener(v -> finish());
+
 
         // Keeping repeat/shuffle button states even after exiting the activity.
         if (player.getRepeatMode() == Player.REPEAT_MODE_ONE) {
@@ -238,7 +260,71 @@ public class PlayerActivity extends AppCompatActivity {
 
     }
 
-    //Part of the highlight updating (which doesn't work)
+    private void showBottomSheet() {
+        playerSettings = new BottomSheetDialog(this);
+        View playerSettingsView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.player_settings, null);
+
+        TextView speedText = playerSettingsView.findViewById(R.id.speed_text);
+        TextView pitchText = playerSettingsView.findViewById(R.id.pitch_text);
+        speedSeekBar = playerSettingsView.findViewById(R.id.speed_bar);
+        pitchSeekBar = playerSettingsView.findViewById(R.id.pitch_bar);
+
+        speedSeekBar.incrementProgressBy(1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            speedSeekBar.setMin(1);
+        }
+        speedSeekBar.setMax(20);
+        speedSeekBar.setProgress(playbackSpeedManager.getPlaybackSpeed());
+        speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", (float) speedSeekBar.getProgress() / 10f));
+
+        pitchSeekBar.incrementProgressBy(1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            pitchSeekBar.setMin(1);
+        }
+        pitchSeekBar.setMax(20);
+        pitchSeekBar.setProgress(playbackSpeedManager.getPlaybackPitch());
+        pitchText.setText(String.format(Locale.CANADA, "Playback Pitch: %.1fx", (float) pitchSeekBar.getProgress() / 10f));
+
+        // Set up SeekBar listeners
+        speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float speed = (float) progress / 10.0f;
+                playbackSpeedManager.setPlaybackSpeed(speed);
+                speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", speed));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        pitchSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float pitch = (float) progress / 10.0f;
+                playbackSpeedManager.setPlaybackPitch(pitch);
+                pitchText.setText(String.format(Locale.CANADA, "Playback Pitch: %.1fx", pitch));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        playerSettings.setContentView(playerSettingsView);
+        playerSettings.show();
+    }
+
+    //Part of the highlight updating
     private void updateSongHighlight() {
         if (player != null) {
             String currentSongPath = queue.get(player.getCurrentMediaItemIndex());

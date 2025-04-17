@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="265dp"
+        android:background="#353535"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/pitch_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Playback Pitch:"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <SeekBar
+            android:id="@+id/pitch_bar"
+            android:layout_width="match_parent"
+            android:layout_height="18dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            android:progressTint="@color/white"
+            android:secondaryProgressTint="@color/white"
+            android:thumbTint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/artist_name" />
+
+        <TextView
+            android:id="@+id/speed_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Playback Speed:"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <SeekBar
+            android:id="@+id/speed_bar"
+            android:layout_width="match_parent"
+            android:layout_height="18dp"
+            android:layout_marginTop="30dp"
+            android:progressTint="@color/white"
+            android:secondaryProgressTint="@color/white"
+            android:thumbTint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/artist_name" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
