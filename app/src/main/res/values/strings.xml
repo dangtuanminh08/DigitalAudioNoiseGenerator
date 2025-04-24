@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">AudioPlayer</string>
+    <string name="app_name">DANG!</string>
+    <string name="unknown_artist">Unknown Artist</string>
+    <string name="unknown_title">Unknown Title</string>
 </resources>

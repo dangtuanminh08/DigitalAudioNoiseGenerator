@@ -1,5 +1,6 @@
 package com.example.audioplayer;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
 
 import android.annotation.SuppressLint;
@@ -54,8 +55,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     private List<Item> songs;
     private List<Item> playlists;
     private MediaSession mediaSession;
-    private final String[] permissionList = {READ_MEDIA_AUDIO};
+    private final String[] permissionList = {READ_MEDIA_AUDIO, POST_NOTIFICATIONS};
     private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO = 0;
+    private static final int MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS = 0;
     private LinearLayout miniPlayer;
     private TextView miniSongTitle, miniSongArtist;
     private GifImageView miniPlayPause;
@@ -159,6 +161,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
             // Permissions already granted, load music files
             viewModel.loadMusicFiles();
         }
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, permissionList, MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS);
+        }
     }
 
     /*
@@ -175,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
                 Toast.makeText(this, "No music for you then!! 😂 (Reopen the app to accept permissions)", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
 
     protected void onResume() {

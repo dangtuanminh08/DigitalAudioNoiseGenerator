@@ -25,12 +25,12 @@ public class PlaybackSpeedManager {
         player.setPlaybackParameters(playbackParameters);
     }
 
-    public int getPlaybackSpeed() {
-        return (int) (speed * 10f);
+    public float getPlaybackSpeed() {
+        return speed * 10f;
     }
 
-    public int getPlaybackPitch() {
-        return (int) (pitch * 10f);
+    public float getPlaybackPitch() {
+        return pitch * 10f;
     }
 
 }

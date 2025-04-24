@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.fragment.app.Fragment;
 import androidx.media3.common.util.UnstableApi;
+import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -76,6 +77,7 @@ public class TabViewFragment extends Fragment implements ItemAdapter.OnSongClick
     @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onSongClick(String songName, String songArtist) {
+        ExoPlayer player = PlayerManager.getPlayer(context);
         ArrayList<String> queue = PlayerManager.getQueue();
         if (queue.isEmpty()) {
             for (Item i : itemList) {
@@ -84,8 +86,8 @@ public class TabViewFragment extends Fragment implements ItemAdapter.OnSongClick
         }
         PlayerManager.playSong(queue);
         int position = getSongPosition(songName);
-        PlayerManager.getPlayer(context).seekTo(position, 0);
-        PlayerManager.getPlayer(context).play();
+        player.seekTo(position, 0);
+        player.play();
 
         // Start PlayerActivity
         Intent intent = new Intent(context, PlayerActivity.class);

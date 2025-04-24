@@ -1,25 +1,31 @@
 package com.example.audioplayer;
 
 import android.content.Context;
-import android.media.session.MediaSession;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 
+import androidx.annotation.OptIn;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 
 import java.util.ArrayList;
 
+
 //"Global" instance of the ExoPlayer.
 public class PlayerManager {
     private static ExoPlayer player;
-    private static MediaSession mediaSession;
     private static ArrayList<String> queue = new ArrayList<>();
+    private static NotificationManager notificationManager;
 
     public static ExoPlayer getPlayer(Context context) {
         if (player == null) {
             player = new ExoPlayer.Builder(context).build();
-            mediaSession = new MediaSession(context, "Minh");
+            Log.d("NotificationManager", player.toString());
+            MediaSessionCompat mediaSession = new MediaSessionCompat(context, "Minh");
+            notificationManager = new NotificationManager(context, mediaSession, player, queue);
+            notificationManager.createNotification();
         }
-        mediaSession.setActive(true);
         return player;
     }
 
@@ -43,4 +49,16 @@ public class PlayerManager {
         }
         return -1;
     }
+
+    @OptIn(markerClass = UnstableApi.class)
+    public static void showMediaNotification(String title, String artist) {
+        notificationManager.showNotification(title, artist);
+    }
+
+    public static void release() {
+        player.release();
+        player = null;
+    }
+
+
 }

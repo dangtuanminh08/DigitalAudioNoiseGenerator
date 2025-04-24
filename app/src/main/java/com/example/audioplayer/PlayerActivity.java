@@ -42,8 +42,7 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView artistName;
     private TextView currentTime;
     private TextView totalTime;
-    private SeekBar seekBar, speedSeekBar, pitchSeekBar;
-    private BottomSheetDialog playerSettings;
+    private SeekBar seekBar;
     private final Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -118,9 +117,9 @@ public class PlayerActivity extends AppCompatActivity {
             queue = intent.getStringArrayListExtra("SONGS");
             int currentIndex = intent.getIntExtra("CURRENT_INDEX", 0);
 
-            if (PlayerManager.getPlayer(this).getCurrentMediaItemIndex() != currentIndex) {
+            if (player.getCurrentMediaItemIndex() != currentIndex) {
                 PlayerManager.playSong(queue);
-                PlayerManager.getPlayer(this).seekTo(currentIndex, 0);
+                player.seekTo(currentIndex, 0);
             } else {
                 setPlayerDisplayText();
             }
@@ -226,9 +225,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onPlaybackStateChanged(int state) {
                 if (state == androidx.media3.common.Player.STATE_READY) {
                     setPlayerDisplayText();
-                    updateSongHighlight();
-                }
-                if (state == androidx.media3.common.Player.STATE_ENDED) {
+                } else if (state == androidx.media3.common.Player.STATE_ENDED) {
                     handler.removeCallbacks(updateRunnable);
                 }
             }
@@ -258,34 +255,36 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
     private void showBottomSheet() {
-        playerSettings = new BottomSheetDialog(this);
+        BottomSheetDialog playerSettings = new BottomSheetDialog(this);
         View playerSettingsView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.player_settings, null);
 
         TextView speedText = playerSettingsView.findViewById(R.id.speed_text);
         TextView pitchText = playerSettingsView.findViewById(R.id.pitch_text);
-        speedSeekBar = playerSettingsView.findViewById(R.id.speed_bar);
-        pitchSeekBar = playerSettingsView.findViewById(R.id.pitch_bar);
+        SeekBar speedSeekBar = playerSettingsView.findViewById(R.id.speed_bar);
+        SeekBar pitchSeekBar = playerSettingsView.findViewById(R.id.pitch_bar);
 
         speedSeekBar.incrementProgressBy(1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             speedSeekBar.setMin(1);
         }
         speedSeekBar.setMax(20);
-        speedSeekBar.setProgress(playbackSpeedManager.getPlaybackSpeed());
-        speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", (float) speedSeekBar.getProgress() / 10f));
+        speedSeekBar.setProgress((int) playbackSpeedManager.getPlaybackSpeed());
+        Log.d("Test", String.valueOf(playbackSpeedManager.getPlaybackSpeed()));
+        Log.d("Test", String.valueOf((int) playbackSpeedManager.getPlaybackSpeed()));
+        speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", speedSeekBar.getProgress() / 10f));
 
         pitchSeekBar.incrementProgressBy(1);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             pitchSeekBar.setMin(1);
         }
         pitchSeekBar.setMax(20);
-        pitchSeekBar.setProgress(playbackSpeedManager.getPlaybackPitch());
-        pitchText.setText(String.format(Locale.CANADA, "Playback Pitch: %.1fx", (float) pitchSeekBar.getProgress() / 10f));
+        pitchSeekBar.setProgress((int) playbackSpeedManager.getPlaybackPitch());
+        pitchText.setText(String.format(Locale.CANADA, "Playback Pitch: %.1fx", pitchSeekBar.getProgress() / 10f));
 
-        // Set up SeekBar listeners
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -335,23 +334,29 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    //Changes the text views to reflect the data of the currently playing song.
+    //Changes the text views to reflect the data of the currently playing song
     private void setPlayerDisplayText() {
         String songPath = queue.get(player.getCurrentMediaItemIndex());
         File file = new File(songPath);
-        String songName = file.getName();
-        songTitle.setText(songName.replaceFirst("[.][^.]+$", ""));
-        artistName.setText("Unknown Artist");
+        String songFile = file.getName();
+        String songName = songFile.replaceFirst("[.][^.]+$", "");
+        songTitle.setText(songName);
+
+        artistName.setText(R.string.unknown_artist);
+
         long duration = player.getDuration();
         seekBar.setMax((int) duration);
         totalTime.setText(formatTime(duration));
         startUpdatingSeekBar();
+
+        PlayerManager.showMediaNotification(songName, "Unknown Artist");
     }
+
     private void startUpdatingSeekBar() {
         handler.post(updateRunnable);
     }
 
-    //Converts milliseconds to minutes and seconds.
+    //Converts milliseconds to minutes and seconds
     private String formatTime(long millis) {
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60;
