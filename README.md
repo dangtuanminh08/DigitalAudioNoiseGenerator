@@ -1,33 +1,27 @@
 ## Digital Audio/Noise Generator! (DANG!) 📼
 This project is an Android app that is programmed to play audio files--specifically music.\
-I made this for myself because I really hate ads on other audio players.
+I made this for myself because I really hate ads on other audio players.\
+Emphasis on MYSELF... this app is mainly designed for my own personal use and will most\
+likely not be satisfactory for you. 
 
 ### Current Features ‼️‼️
 - Repeat modes
 - Shuffle modes
 - Cool animated Hello Kitty play/pause button!!!
-- Pitch/Speed setting _(not reflected in repo, but is finished)_
+- Pitch/Speed setting
+- Notification with controls
 
 ### Features Coming Soon 😼
 - Headphone/earbud gesture compatability
-- Notification with controls
 - Change names of/delete files
 - More Hello Kitty...
 
 ----
 
 #### Dev Updates:
-Hello!\
-I stumbled into a huge problem while trying to implement a custom button into the media notification controller.\
-Turns out I was using an old method of doing it. So... when I tried to use the newer method, I learned that\
-most of the things I was doing manually can be easily done with Jetpack Media3 provided by Android.\
-However, most of these things (such as the notification controller) are exclusive to newer versions of Android.\
-Therefore, I have chosen to make two branches: one implementing Jetpack Media3 ("jetpack"), and one without ("main").\
-The main branch will be updated first by the end of April.\
-Unfortunately, the future of this project remains unknown past that... I need to start a big project soon to stand out for univerity applications.\
-I will try to grind it out for you guys!!
+im feeling awesome sauce
 
->Updated Apr 22th 2025\
+>Updated Apr 23th 2025\
 >P.S. If someone knows anywhere else that's better to put these kind of updates/blogs, please let me know...
 
 ----
