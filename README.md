@@ -10,9 +10,9 @@ likely not be satisfactory for you.
 - Cool animated Hello Kitty play/pause button!!!
 - Pitch/Speed setting
 - Notification with controls
+- Headphones gesture compatability
 
 ### Features Coming Soon 😼
-- Headphone/earbud gesture compatability
 - Change names of/delete files
 - More Hello Kitty...
 
