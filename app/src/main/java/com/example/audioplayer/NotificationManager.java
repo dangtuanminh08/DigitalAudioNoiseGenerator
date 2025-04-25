@@ -121,17 +121,17 @@ public class NotificationManager {
         String playPauseLabel = player.isPlaying() ? "Pause" : "Play";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(androidx.media3.session.R.drawable.media3_icon_heart_filled)
+                .setSmallIcon(R.drawable.notificationicon)
                 .setContentTitle(title)
                 .setContentText(artist)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.music))
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.notificationimage))
                 .setStyle(new MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2, 3))
                 .addAction(new NotificationCompat.Action(R.drawable.pause, playPauseLabel, playPausePendingIntent))
                 .addAction(new NotificationCompat.Action(R.drawable.prev_song, "Previous", previousPendingIntent))
                 .addAction(new NotificationCompat.Action(R.drawable.next_song, "Next", nextPendingIntent))
-                .addAction(new NotificationCompat.Action(R.drawable.exit, "Release", releasePendingIntent))
+                .addAction(new NotificationCompat.Action(androidx.media3.session.R.drawable.media3_icon_block, "Release", releasePendingIntent))
                 .setOngoing(true);
 
 
