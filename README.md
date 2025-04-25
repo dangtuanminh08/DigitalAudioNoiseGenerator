@@ -10,18 +10,17 @@ likely not be satisfactory for you.
 - Cool animated Hello Kitty play/pause button!!!
 - Pitch/Speed setting
 - Notification with controls
+- Headphones gesture compatability
 
 ### Features Coming Soon 😼
-- Headphone/earbud gesture compatability
 - Change names of/delete files
 - More Hello Kitty...
 
 ----
 
 #### Dev Updates:
-im feeling awesome sauce
-
->Updated Apr 23th 2025\
+![hello kitty](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFdjjInM4XlIIeyh3OirMa7TbbreoU7Cv_9g&s)
+>Updated Apr 24th 2025\
 >P.S. If someone knows anywhere else that's better to put these kind of updates/blogs, please let me know...
 
 ----
