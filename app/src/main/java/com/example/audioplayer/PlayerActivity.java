@@ -15,6 +15,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
@@ -47,9 +48,8 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (player != null && player.isPlaying()) {
-                long currentPosition = player.getCurrentPosition();
-                seekBar.setProgress((int) currentPosition);
-                currentTime.setText(formatTime(currentPosition));
+                seekBar.setProgress((int) player.getCurrentPosition());
+                currentTime.setText(formatTime(player.getCurrentPosition()));
                 handler.postDelayed(this, 1000);
             }
         }
@@ -235,6 +235,18 @@ public class PlayerActivity extends AppCompatActivity {
                 updateSongHighlight();
             }
 
+            public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition,
+                                                @NonNull Player.PositionInfo newPosition,
+                                                int reason) {
+                Player.Listener.super.onPositionDiscontinuity(oldPosition, newPosition, reason);
+
+                if (seekBar != null && player != null) {
+                    seekBar.setProgress((int) player.getCurrentPosition());
+                    currentTime.setText(formatTime(player.getCurrentPosition()));
+                }
+            }
+
+
         });
 
         //Checks if the seekbar is being dragged.
@@ -273,8 +285,6 @@ public class PlayerActivity extends AppCompatActivity {
         }
         speedSeekBar.setMax(20);
         speedSeekBar.setProgress((int) playbackSpeedManager.getPlaybackSpeed());
-        Log.d("Test", String.valueOf(playbackSpeedManager.getPlaybackSpeed()));
-        Log.d("Test", String.valueOf((int) playbackSpeedManager.getPlaybackSpeed()));
         speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", speedSeekBar.getProgress() / 10f));
 
         pitchSeekBar.incrementProgressBy(1);

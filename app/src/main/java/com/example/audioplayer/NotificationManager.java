@@ -42,7 +42,8 @@ public class NotificationManager {
         }
     };
 
-    private static final PlaybackStateCompat.CustomAction releaseAction = new PlaybackStateCompat.CustomAction.Builder("ACTION_RELEASE", "Release", R.drawable.exit)
+    private static final PlaybackStateCompat.CustomAction releaseAction = new PlaybackStateCompat.CustomAction.Builder("ACTION_RELEASE", "Release",
+            androidx.media3.session.R.drawable.media3_icon_block)
             .build();
 
     public NotificationManager(Context context, MediaSessionCompat mediaSession, ExoPlayer player, ArrayList<String> queue) {
@@ -140,7 +141,7 @@ public class NotificationManager {
                 .build()
         );
 
-        setPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+        setPlaybackState(player.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
