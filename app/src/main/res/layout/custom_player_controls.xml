@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="408dp"
-        android:text="Song Name"
+        android:text="@string/unknown_title"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Artist Name"
+        android:text="@string/unknown_artist"
         android:textAlignment="center"
         android:textColor="#B0BEC5"
         android:textSize="12sp"
@@ -45,19 +45,18 @@
 
         <ImageButton
             android:id="@+id/btn_repeat"
-            android:layout_width="55dp"
-            android:layout_height="70dp"
+            android:layout_width="70dp"
+            android:layout_height="80dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:scaleType="centerInside"
-            android:scaleX="0.45"
-            android:scaleY="0.45"
+            android:scaleX="0.35"
+            android:scaleY="0.35"
             android:src="@drawable/order" />
 
         <ImageButton
             android:id="@+id/btn_prev"
             android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginLeft="20dp"
+            android:layout_height="80dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:scaleType="centerInside"
             android:scaleX="0.5"
@@ -66,10 +65,9 @@
 
         <pl.droidsonroids.gif.GifImageView
             android:id="@+id/btn_play_pause"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginHorizontal="10dp"
             android:scaleType="fitCenter"
             android:scaleX="2"
             android:scaleY="2"
@@ -78,8 +76,7 @@
         <ImageButton
             android:id="@+id/btn_next"
             android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginRight="20dp"
+            android:layout_height="80dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:scaleType="centerInside"
             android:scaleX="0.5"
@@ -88,12 +85,12 @@
 
         <ImageButton
             android:id="@+id/btn_shuffle"
-            android:layout_width="55dp"
-            android:layout_height="70dp"
+            android:layout_width="70dp"
+            android:layout_height="80dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:scaleType="centerInside"
-            android:scaleX="0.55"
-            android:scaleY="0.55"
+            android:scaleX="0.4"
+            android:scaleY="0.4"
             android:src="@drawable/shuffle"
             app:tint="#BABABA" />
     </LinearLayout>

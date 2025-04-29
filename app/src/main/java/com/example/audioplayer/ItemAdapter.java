@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     private final List<Item> itemList;
     private final OnSongClickListener listener;
     private int selectedPosition = -1;
+    private final int[] imageResId = {R.drawable.item_pic1, R.drawable.item_pic2, R.drawable.item_pic3};
 
     public interface OnSongClickListener {
         void onSongClick(String songName, String songArtist);
@@ -24,6 +26,19 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     public ItemAdapter(List<Item> itemList, OnSongClickListener listener) {
         this.itemList = itemList;
         this.listener = listener;
+    }
+
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
+        public TextView titleTextView;
+        public TextView artistTextView;
+        public ImageView imageView;
+
+        public MyViewHolder(View itemView) {
+            super(itemView);
+            titleTextView = itemView.findViewById(R.id.titleTextView);
+            artistTextView = itemView.findViewById(R.id.artistTextView);
+            imageView = itemView.findViewById(R.id.imageView);
+        }
     }
 
     @NonNull
@@ -39,7 +54,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         Item currentItem = itemList.get(position);
         holder.titleTextView.setText(currentItem.getTitle());
         holder.artistTextView.setText(currentItem.getArtist());
-
+        holder.imageView.setImageResource(imageResId[position % imageResId.length]);
         if (position == selectedPosition) {
             holder.titleTextView.setTextColor(Color.argb(255, 255, 120, 190));
         } else {
@@ -63,16 +78,5 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     @Override
     public int getItemCount() {
         return itemList.size();
-    }
-
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView titleTextView;
-        public TextView artistTextView;
-
-        public MyViewHolder(View itemView) {
-            super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            artistTextView = itemView.findViewById(R.id.artistTextView);
-        }
     }
 }

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.fragment.app.Fragment;
+import androidx.media3.common.MediaItem;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -84,16 +85,25 @@ public class TabViewFragment extends Fragment implements ItemAdapter.OnSongClick
                 queue.add(i.getPath());
             }
         }
-        PlayerManager.playSong(queue);
         int position = getSongPosition(songName);
-        player.seekTo(position, 0);
-        player.play();
 
-        // Start PlayerActivity
+        for (String path : queue) {
+            MediaItem mediaItem = MediaItem.fromUri(path);
+            player.addMediaItem(mediaItem);
+        }
+
+        player.seekTo(position, 0);
+
+        //Opens PlayerActivity
         Intent intent = new Intent(context, PlayerActivity.class);
         intent.putStringArrayListExtra("SONGS", queue);
         intent.putExtra("CURRENT_INDEX", position);
         context.startActivity(intent);
+
+        player.prepare();
+        player.play();
+
+
     }
 
     private int getSongPosition(String songName) {

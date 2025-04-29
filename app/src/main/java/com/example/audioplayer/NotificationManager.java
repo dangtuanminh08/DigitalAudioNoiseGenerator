@@ -122,10 +122,10 @@ public class NotificationManager {
         String playPauseLabel = player.isPlaying() ? "Pause" : "Play";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notificationicon)
+                .setSmallIcon(R.drawable.notification_icon)
                 .setContentTitle(title)
                 .setContentText(artist)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.notificationimage))
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.notification_image))
                 .setStyle(new MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2, 3))
@@ -155,14 +155,12 @@ public class NotificationManager {
         public void onPlay() {
             player.play();
             handler.post(updateProgress);
-            setPlaybackState(PlaybackStateCompat.STATE_PLAYING);
         }
 
         @Override
         public void onPause() {
             player.pause();
             handler.removeCallbacks(updateProgress);
-            setPlaybackState(PlaybackStateCompat.STATE_PAUSED);
         }
 
         @Override

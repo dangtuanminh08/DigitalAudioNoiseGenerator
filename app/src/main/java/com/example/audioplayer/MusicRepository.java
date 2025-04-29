@@ -16,6 +16,7 @@ public class MusicRepository {
 
     private static final String TAG = "MusicRepository";
 
+    //Reads all data from all music files in internal storage
     public List<Item> getMusicFiles(Context context) {
         List<Item> musicItemList = new ArrayList<>();
         ContentResolver contentResolver = context.getContentResolver();

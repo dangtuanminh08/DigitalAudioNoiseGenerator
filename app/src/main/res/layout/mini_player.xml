@@ -20,7 +20,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_launcher_foreground" />
+            android:src="@drawable/mini_player_image" />
 
         <LinearLayout
             android:layout_width="258dp"
@@ -32,7 +32,7 @@
                 android:id="@+id/mini_song_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Title"
+                android:text="@string/unknown_title"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -41,7 +41,7 @@
                 android:id="@+id/mini_song_artist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Artist • Length"
+                android:text="@string/unknown_artist"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 

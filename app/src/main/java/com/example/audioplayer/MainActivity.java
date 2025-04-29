@@ -150,6 +150,15 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         player = PlayerManager.getPlayer(this);
         player.addListener(new Player.Listener() {
             @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                if (isPlaying) {
+                    miniPlayPause.setImageDrawable(finalPlayGif);
+                    finalPlayGif.start();
+                } else {
+                    miniPlayPause.setImageDrawable(finalPauseGif);
+                }
+            }
+            @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 updateMiniPlayer();
             }
@@ -224,6 +233,3 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         }
     }
 }
-
-//Add pop-up menu in player
-//Make speed/pitch menu

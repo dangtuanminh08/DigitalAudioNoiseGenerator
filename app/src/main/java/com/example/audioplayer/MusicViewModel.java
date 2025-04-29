@@ -23,6 +23,7 @@ public class MusicViewModel extends AndroidViewModel {
         return musicFiles;
     }
 
+    //Displays all music files
     void loadMusicFiles() {
         List<Item> files = repository.getMusicFiles(getApplication());
         musicFiles.setValue(files);

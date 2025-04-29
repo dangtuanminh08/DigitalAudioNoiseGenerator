@@ -1,10 +1,12 @@
 package com.example.audioplayer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 
 import androidx.annotation.OptIn;
+import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
@@ -16,12 +18,18 @@ import java.util.ArrayList;
 public class PlayerManager {
     private static ExoPlayer player;
     private static ArrayList<String> queue = new ArrayList<>();
+    @SuppressLint("StaticFieldLeak")
     private static NotificationManager notificationManager;
 
     public static ExoPlayer getPlayer(Context context) {
         if (player == null) {
             player = new ExoPlayer.Builder(context).build();
-            Log.d("NotificationManager", player.toString());
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                    .build();
+
+            player.setAudioAttributes(audioAttributes, true);
             MediaSessionCompat mediaSession = new MediaSessionCompat(context, "Minh");
             notificationManager = new NotificationManager(context, mediaSession, player, queue);
             notificationManager.createNotification();
@@ -29,14 +37,13 @@ public class PlayerManager {
         return player;
     }
 
-    public static void playSong(ArrayList<String> queue) {
+    public static void prepareQueue(ArrayList<String> queue) {
         PlayerManager.queue = queue;
         player.clearMediaItems();
         for (String path : queue) {
             MediaItem mediaItem = MediaItem.fromUri(path);
             player.addMediaItem(mediaItem);
         }
-        player.prepare();
     }
 
     public static ArrayList<String> getQueue() {
@@ -59,6 +66,4 @@ public class PlayerManager {
         player.release();
         player = null;
     }
-
-
 }

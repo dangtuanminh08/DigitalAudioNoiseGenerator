@@ -12,20 +12,21 @@
         android:id="@+id/imageView"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:src="@drawable/ic_launcher_foreground" />
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/item_pic1" />
 
     <LinearLayout
-        android:layout_width="275dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/titleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Title"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:ellipsize="end"
+            android:text="@string/unknown_title"
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
 
@@ -33,7 +34,7 @@
             android:id="@+id/artistTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Artist • Length"
+            android:text="@string/unknown_artist"
             android:textSize="12sp" />
 
     </LinearLayout>
