@@ -1,8 +1,6 @@
 ## Digital Audio/Noise Generator! (DANG!) 📼
-This project is an Android app that is programmed to play audio files--specifically music.\
-I made this for myself because I really hate ads on other audio players.\
-Emphasis on MYSELF... this app is mainly designed for my own personal use and will most\
-likely not be satisfactory for you. 
+This project is an ad-less Android app for playing audio files completely offline.\
+This app is designed for myself, but you can easily customize it to your liking! (tutorial for that soon)
 
 ### Current Features ‼️‼️
 - Repeat modes
@@ -29,8 +27,6 @@ likely not be satisfactory for you.
 - My phone: Google Pixel 4a
 - Java Version: 8
 - If you're trying to clone this repository and/or get the app on your phone, I suggest using/learning about [Android Studio](https://developer.android.com/studio?gad_source=1&gclid=Cj0KCQjw4cS-BhDGARIsABg4_J1JtKwOxSEJL3cfLVYuusIUK5HGLVv_I9vWDQpqSgQJ-NFhvGGysO8aAizDEALw_wcB&gclsrc=aw.ds).
+- ^ I will put a downloadable .apk soon. I love sideloading!!
 - All warnings/TODOs can safely be ignored. They are not harmful and the app runs as intended. I will deal with them once the whole app is complete.
 > Email: dangtuanminh1123@gmail.com\
-> I will block all messengers who send me suspicious links, spam, prank emails, etc.\
-> (YES, even if you're a friend or an employer. For the latter, I check for proof of legitimacy.)\
-> (I love internet safety.)
