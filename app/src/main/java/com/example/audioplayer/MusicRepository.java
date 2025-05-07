@@ -23,8 +23,9 @@ public class MusicRepository {
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
+                MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.DISPLAY_NAME,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.DURATION
         };
@@ -32,19 +33,23 @@ public class MusicRepository {
 
         try (Cursor cursor = contentResolver.query(musicUri, projection, selection, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
+                int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
                 int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
-                int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
+                int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
                 int artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
                 int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION);
 
                 do {
+                    long id = cursor.getLong(idColumn);
+                    Uri fileUri = Uri.withAppendedPath(musicUri, String.valueOf(id));
                     String filePath = cursor.getString(dataColumn);
                     String title = cursor.getString(titleColumn);
+                    title = title.substring(0, title.lastIndexOf('.'));
                     String artist = cursor.getString(artistColumn);
                     long duration = cursor.getLong(durationColumn);
                     String formattedDuration = formatDuration(duration);
 
-                    musicItemList.add(new Item(title, String.format("%s • %s", artist, formattedDuration), filePath));
+                    musicItemList.add(new Item(title, String.format("%s • %s", artist, formattedDuration), filePath, fileUri));
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {

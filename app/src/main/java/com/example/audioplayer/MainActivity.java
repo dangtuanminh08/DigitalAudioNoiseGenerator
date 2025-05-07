@@ -7,7 +7,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.session.MediaSession;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -45,22 +44,19 @@ import java.util.Locale;
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
-
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSongClickListener {
 
-    private ItemAdapter adapter;
+    private static final int PERMISSION_REQUEST_CODE = 1001;
+
     private ExoPlayer player;
     private MusicViewModel viewModel;
-    private List<Item> songs;
-    private List<Item> playlists;
-    private MediaSession mediaSession;
-    private final String[] permissionList = {READ_MEDIA_AUDIO, POST_NOTIFICATIONS};
-    private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO = 0;
-    private static final int MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS = 0;
+    private final List<Item> queue = new ArrayList<>();
+
     private LinearLayout miniPlayer;
     private TextView miniSongTitle, miniSongArtist;
     private GifImageView miniPlayPause;
+    private GifDrawable playGif, pauseGif;
 
     @SuppressLint("NotifyDataSetChanged")
     @OptIn(markerClass = UnstableApi.class)
@@ -70,154 +66,168 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
+        setupInsets();
+        setupTabs();
+        setupMiniPlayerView();
+        initGifs();
+
+        viewModel.getMusicFiles().observe(this, items -> {
+            queue.clear();
+            queue.addAll(items);
+            ((TextView) findViewById(R.id.textView)).setText(String.format(Locale.CANADA, "Number of songs: %d", queue.size()));
+        });
+
+        checkAndRequestPermissions();
+
+        player = PlayerManager.getPlayer(this);
+        setupPlayerListeners();
+    }
+
+    private void setupInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
 
+    private void setupTabs() {
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         ViewPager2 viewPager = findViewById(R.id.viewPager);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
+        viewPager.setAdapter(adapter);
 
-        viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) ->
+                tab.setText(position == 0 ? "Songs" : "Playlists")
+        ).attach();
+    }
 
-        songs = new ArrayList<>();
-        playlists = new ArrayList<>();
-        playlists.add(new Item("In Development", "This feature is not implemented yet.", ""));
-
-        adapter = new ItemAdapter(songs, this);
-
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle(), songs, playlists);
-        viewPager.setAdapter(viewPagerAdapter);
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
-            if (position == 0) {
-                tab.setText("Songs");
-            } else if (position == 1) {
-                tab.setText("Playlists");
-            }
-        }).attach();
-
-        viewModel.getMusicFiles().observe(this, items -> {
-            songs.clear();
-            songs.addAll(items);
-            adapter.notifyDataSetChanged();
-            TextView testTextView = findViewById(R.id.textView);
-            testTextView.setText(String.format(Locale.CANADA, "Number of songs: %d", songs.size()));
-        });
-
+    //Sets up mini player at the bottom
+    @OptIn(markerClass = UnstableApi.class)
+    private void setupMiniPlayerView() {
         miniPlayer = findViewById(R.id.mini_player);
         miniSongTitle = findViewById(R.id.mini_song_title);
         miniSongArtist = findViewById(R.id.mini_song_artist);
         miniPlayPause = findViewById(R.id.mini_play_pause);
 
-        GifDrawable playGif;
-        GifDrawable pauseGif;
+        miniPlayPause.setOnClickListener(v -> togglePlayback());
+
+        miniPlayer.setOnClickListener(v -> {
+            Context context = v.getContext();
+            Intent intent = new Intent(context, PlayerActivity.class);
+            intent.putStringArrayListExtra("SONGS", PlayerManager.getQueue());
+            intent.putExtra("CURRENT_INDEX", PlayerManager.getCurrentSongIndex());
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeCustomAnimation(context, R.anim.slide_up, 0);
+            context.startActivity(intent, options.toBundle());
+        });
+    }
+
+    //Loads GIFs for use
+    private void initGifs() {
         try {
             playGif = new GifDrawable(getResources(), R.drawable.play);
             pauseGif = new GifDrawable(getResources(), R.drawable.pause);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to load GIFs", e);
         }
+    }
 
-        GifDrawable finalPlayGif = playGif;
-        GifDrawable finalPauseGif = pauseGif;
+    private void togglePlayback() {
+        if (player == null) return;
+        if (player.isPlaying()) {
+            player.pause();
+            miniPlayPause.setImageDrawable(pauseGif);
+            pauseGif.start();
+        } else {
+            player.play();
+            miniPlayPause.setImageDrawable(playGif);
+            playGif.start();
+        }
+    }
 
-        miniPlayPause.setOnClickListener(v -> {
-            if (player.isPlaying()) {
-                player.pause();
-                miniPlayPause.setImageDrawable(finalPauseGif);
-                finalPauseGif.start();
-
-            } else {
-                player.play();
-                miniPlayPause.setImageDrawable(finalPlayGif);
-                finalPlayGif.start();
-            }
-        });
-
-        // Opens full PlayerActivity when clicked
-        miniPlayer.setOnClickListener(v -> {
-            Context context = v.getContext();
-            Intent intent = new Intent(context, PlayerActivity.class);
-
-            intent.putStringArrayListExtra("SONGS", PlayerManager.getQueue());
-            intent.putExtra("CURRENT_INDEX", PlayerManager.getCurrentSongIndex());
-
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeCustomAnimation(context, R.anim.slide_up, 0);
-            context.startActivity(intent, options.toBundle());
-        });
-
-        player = PlayerManager.getPlayer(this);
+    private void setupPlayerListeners() {
         player.addListener(new Player.Listener() {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
-                if (isPlaying) {
-                    miniPlayPause.setImageDrawable(finalPlayGif);
-                    finalPlayGif.start();
-                } else {
-                    miniPlayPause.setImageDrawable(finalPauseGif);
-                }
+                miniPlayPause.setImageDrawable(isPlaying ? playGif : pauseGif);
+                if (isPlaying) playGif.start();
             }
+
             @Override
             public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
                 updateMiniPlayer();
             }
         });
+    }
 
+    //Checks for permissions and requests if needed
+    private void checkAndRequestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, permissionList, MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO);
-        } else {
-            // Permissions already granted, load music files
-            viewModel.loadMusicFiles();
+            permissionsNeeded.add(READ_MEDIA_AUDIO);
         }
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, permissionList, MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(POST_NOTIFICATIONS);
+        }
+
+        if (permissionsNeeded.isEmpty()) {
+            viewModel.loadMusicFiles();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    permissionsNeeded.toArray(new String[0]),
+                    PERMISSION_REQUEST_CODE);
         }
     }
 
-    /*
-    Requests permissions and only displays the song list if the permission is granted.
-    If permission is denied, the app will request every time it is opened until permission is granted.
-    */
+    //Handles permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (allGranted) {
                 viewModel.loadMusicFiles();
             } else {
-                Toast.makeText(this, "No music for you then!! 😂 (Reopen the app to accept permissions)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No music for you then!! 😂", Toast.LENGTH_SHORT).show();
             }
         }
-
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
         updateMiniPlayer();
     }
 
     private void updateMiniPlayer() {
-        if (player.getCurrentMediaItem() != null) {
-            Item currentItem = songs.get(player.getCurrentMediaItemIndex());
-
-            miniSongTitle.setText(currentItem.getTitle());
-            miniSongArtist.setText(currentItem.getArtist());
-            miniPlayer.setVisibility(View.VISIBLE); // Shows mini player when a song is playing
-
-            if (player.isPlaying()) {
-                miniPlayPause.setImageResource(R.drawable.play);
-            } else {
-                miniPlayPause.setImageResource(R.drawable.pause);
-            }
-        } else {
-            miniPlayer.setVisibility(View.GONE); // Hides mini player if no song is playing
+        if (player == null || player.getCurrentMediaItem() == null || queue.isEmpty()) {
+            miniPlayer.setVisibility(View.GONE);
+            return;
         }
+
+        int index = player.getCurrentMediaItemIndex();
+        if (index >= queue.size()) index = 0;
+
+        Item currentItem = queue.get(index);
+        miniSongTitle.setText(currentItem.getTitle());
+        miniSongArtist.setText(currentItem.getArtist());
+        miniPlayer.setVisibility(View.VISIBLE);
+
+        miniPlayPause.setImageDrawable(player.isPlaying() ? playGif : pauseGif);
     }
 
     @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onSongClick(String songName, String songArtist) {
+        //Should do nothing
     }
 
     @Override
@@ -226,10 +236,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         if (player != null) {
             player.release();
             player = null;
-        }
-        if (mediaSession != null) {
-            mediaSession.release();
-            mediaSession = null;
         }
     }
 }

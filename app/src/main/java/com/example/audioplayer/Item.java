@@ -1,23 +1,27 @@
 package com.example.audioplayer;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Item implements Parcelable {
     private String title;
     private String artist;
-    private final String path;
+    private String path;
+    private final Uri uri;
 
-    public Item(String title, String artist, String path) {
+    public Item(String title, String artist, String path, Uri uri) {
         this.title = title;
         this.artist = artist;
         this.path = path;
+        this.uri = uri;
     }
 
     protected Item(Parcel in) {
         title = in.readString();
         artist = in.readString();
         path = in.readString();
+        uri = in.readParcelable(Uri.class.getClassLoader());
     }
 
     public static final Creator<Item> CREATOR = new Creator<Item>() {
@@ -44,12 +48,20 @@ public class Item implements Parcelable {
         return path;
     }
 
+    public Uri getUri() {
+        return uri;
+    }
+
     public void setTitle(String newTitle) {
         this.title = newTitle;
     }
 
     public void setArtist(String newArtist) {
         this.artist = newArtist;
+    }
+
+    public void setPath(String newPath) {
+        this.path = newPath;
     }
 
     @Override
@@ -62,5 +74,6 @@ public class Item implements Parcelable {
         dest.writeString(title);
         dest.writeString(artist);
         dest.writeString(path);
+        dest.writeParcelable(uri, flags);
     }
 }

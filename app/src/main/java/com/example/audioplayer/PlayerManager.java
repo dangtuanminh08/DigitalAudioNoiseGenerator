@@ -51,10 +51,7 @@ public class PlayerManager {
     }
 
     public static int getCurrentSongIndex() {
-        if (player != null) {
-            return player.getCurrentMediaItemIndex();
-        }
-        return -1;
+        return (player != null) ? player.getCurrentMediaItemIndex() : -1;
     }
 
     @OptIn(markerClass = UnstableApi.class)
@@ -63,7 +60,9 @@ public class PlayerManager {
     }
 
     public static void release() {
-        player.release();
-        player = null;
+        if (player != null) {
+            player.release();
+            player = null;
+        }
     }
 }

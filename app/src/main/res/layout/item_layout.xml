@@ -42,8 +42,10 @@
     <ImageButton
         android:id="@+id/menuButton"
         android:layout_width="48dp"
-        android:layout_height="38dp"
+        android:layout_height="40dp"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:focusable="true"
+        android:clickable="true"
         android:contentDescription="Menu"
         android:scaleType="centerInside"
         android:src="@drawable/baseline_more_vert_24"

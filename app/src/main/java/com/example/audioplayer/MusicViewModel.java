@@ -16,7 +16,6 @@ public class MusicViewModel extends AndroidViewModel {
     public MusicViewModel(Application application) {
         super(application);
         repository = new MusicRepository();
-        loadMusicFiles();
     }
 
     public LiveData<List<Item>> getMusicFiles() {
