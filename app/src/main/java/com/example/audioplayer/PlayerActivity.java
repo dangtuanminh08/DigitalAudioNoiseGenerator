@@ -73,7 +73,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        PlayerView playerView = findViewById(R.id.player_view);
         songTitle = findViewById(R.id.song_title);
         artistName = findViewById(R.id.artist_name);
         lengthBar = findViewById(R.id.seek_bar);
