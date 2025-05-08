@@ -9,16 +9,17 @@ This app is designed for myself, but you can easily customize it to your liking!
 - Pitch/Speed setting
 - Notification with controls
 - Headphones gesture compatability
+- Change names of/delete files
 
 ### Features Coming Soon 😼
-- Change names of/delete files
+
 - More Hello Kitty...
 
 ----
 
 #### Dev Updates:
-![hello kitty](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFdjjInM4XlIIeyh3OirMa7TbbreoU7Cv_9g&s)
->Updated Apr 24th 2025\
+we are so back
+>Updated May 5th 2025\
 >P.S. If someone knows anywhere else that's better to put these kind of updates/blogs, please let me know...
 
 ----
