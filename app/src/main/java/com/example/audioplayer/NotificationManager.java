@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,9 +31,12 @@ public class NotificationManager {
     private static MediaSessionCompat mediaSession;
     private final List<String> queue;
 
+    private final Bitmap largeIcon;
+
     private final Handler handler = new Handler();
     private final int NOTIFICATION_ID = 1;
     private final String CHANNEL_ID = "media_playback_channel";
+
 
     private final Runnable updateProgress = new Runnable() {
         @Override
@@ -52,6 +56,7 @@ public class NotificationManager {
         NotificationManager.mediaSession = mediaSession;
         NotificationManager.player = player;
         this.queue = queue;
+        this.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.notification_image);
     }
 
     public void createNotification() {
@@ -88,7 +93,7 @@ public class NotificationManager {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.notification_image))
+                .setLargeIcon(largeIcon)
                 .setContentTitle(title)
                 .setContentText(artist)
                 .setStyle(new MediaStyle()
@@ -164,8 +169,7 @@ public class NotificationManager {
         public void onSkipToPrevious() {
             long pos = player.getCurrentPosition();
             if ((player.getCurrentMediaItemIndex() == 0 && pos < 7000) || pos < 7000) {
-                int lastIndex = queue.size() - 1;
-                player.seekTo(lastIndex, 0);
+                player.seekTo((player.getCurrentMediaItemIndex() == 0) ? queue.size() - 1 : player.getCurrentMediaItemIndex() - 1, 0);
             } else {
                 player.seekTo(0);
             }

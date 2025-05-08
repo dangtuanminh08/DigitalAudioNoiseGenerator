@@ -277,6 +277,7 @@ public class PlayerActivity extends AppCompatActivity {
         updateSeekBarAndTime();
         startUpdatingSeekBar();
 
+        PlayerManager.showMediaNotification(name, "Unknown Artist");
         NotificationManager.updatePlaybackState(player.isPlaying() ? 3 : 2);
 
         ItemAdapter itemAdapter = TabViewFragment.adapter;
