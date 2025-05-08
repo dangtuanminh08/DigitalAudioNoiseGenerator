@@ -82,11 +82,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         holder.imageView.setImageResource(imageResId[position % imageResId.length]);
 
         // Highlight the currently playing song (either user tapped or the one being played)
-        // Track currently playing song position
         int currentPlayingPosition = -1;
         holder.titleTextView.setTextColor(
                 position == selectedPosition || position == currentPlayingPosition
-                        ? Color.argb(255, 255, 120, 190)
+                        ? Color.argb(255, 255, 133, 182)
                         : Color.WHITE
         );
 
@@ -123,6 +122,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         });
     }
 
+    // Track currently playing song position
     public void setCurrentPlayingSong(int position) {
         if (position == selectedPosition) return;
 

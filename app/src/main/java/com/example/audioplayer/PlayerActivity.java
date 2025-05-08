@@ -124,7 +124,7 @@ public class PlayerActivity extends AppCompatActivity {
                 PlayerManager.prepareQueue(queue);
                 player.seekTo(currentIndex, 0);
             } else {
-                setPlayerDisplayText();
+                updateSongInfo();
             }
         }
     }
@@ -161,7 +161,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onPlaybackStateChanged(int state) {
                 if (state == Player.STATE_READY) {
-                    setPlayerDisplayText();
+                    updateSongInfo();
                     updateSeekBarAndTime();
                 } else if (state == Player.STATE_ENDED) {
                     handler.removeCallbacks(updateRunnable);
@@ -170,8 +170,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
-                setPlayerDisplayText();
-                updateSongHighlight();
+                updateSongInfo();
             }
 
             @Override
@@ -212,16 +211,16 @@ public class PlayerActivity extends AppCompatActivity {
         } else {
             player.seekToNextMediaItem();
         }
-        updateSongHighlight();
+
     }
 
     private void prevSong() {
-        if (player.getCurrentPosition() < 7000) {
+        long pos = player.getCurrentPosition();
+        if (pos < 7000) {
             player.seekTo((player.getCurrentMediaItemIndex() == 0) ? queue.size() - 1 : player.getCurrentMediaItemIndex() - 1, 0);
         } else {
             player.seekTo(0);
         }
-        updateSongHighlight();
     }
 
     private void toggleShuffle() {
@@ -269,7 +268,7 @@ public class PlayerActivity extends AppCompatActivity {
         }, 100);
     }
 
-    private void setPlayerDisplayText() {
+    private void updateSongInfo() {
         String path = player.getCurrentMediaItemIndex() >= queue.size() ? queue.get(0) : queue.get(player.getCurrentMediaItemIndex());
         String name = new File(path).getName().replaceFirst("[.][^.]+$", "");
 
@@ -278,12 +277,9 @@ public class PlayerActivity extends AppCompatActivity {
         updateSeekBarAndTime();
         startUpdatingSeekBar();
 
-        PlayerManager.showMediaNotification(name, "Unknown Artist");
-    }
+        NotificationManager.updatePlaybackState(player.isPlaying() ? 3 : 2);
 
-    private void updateSongHighlight() {
         ItemAdapter itemAdapter = TabViewFragment.adapter;
-        String path = player.getCurrentMediaItemIndex() >= queue.size() ? queue.get(0) : queue.get(player.getCurrentMediaItemIndex());
         itemAdapter.setCurrentPlayingSong(queue.indexOf(path));
     }
 
