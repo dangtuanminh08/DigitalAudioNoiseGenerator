@@ -2,20 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@color/material_dynamic_neutral30"
     android:orientation="vertical"
     android:padding="15dp">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Title" />
 
     <EditText
         android:id="@+id/new_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="12dp"
         android:hint="@string/title_hint"
         android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Artist" />
 
     <EditText
         android:id="@+id/new_artist"
@@ -24,8 +35,9 @@
         android:layout_marginLeft="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="4dp"
         android:fontFamily="sans-serif"
         android:hint="@string/artist_hint"
         android:singleLine="true" />
+
 </LinearLayout>
