@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -33,7 +34,7 @@ public class NotificationManager {
 
     private final Bitmap largeIcon;
 
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private final int NOTIFICATION_ID = 1;
     private final String CHANNEL_ID = "media_playback_channel";
 
@@ -187,7 +188,9 @@ public class NotificationManager {
             if ("ACTION_RELEASE".equals(action)) {
                 mediaSession.release();
                 PlayerManager.release();
+                handler.removeCallbacksAndMessages(null);
                 NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID);
+
             }
         }
     }

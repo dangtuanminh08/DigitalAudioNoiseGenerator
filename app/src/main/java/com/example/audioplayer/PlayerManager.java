@@ -23,7 +23,7 @@ public class PlayerManager {
 
     public static ExoPlayer getPlayer(Context context) {
         if (player == null) {
-            player = new ExoPlayer.Builder(context).build();
+            player = new ExoPlayer.Builder(context.getApplicationContext()).build();
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)

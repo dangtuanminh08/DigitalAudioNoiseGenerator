@@ -27,7 +27,7 @@
             android:layout_height="match_parent"
             android:ellipsize="end"
             android:text="@string/unknown_title"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="16sp" />
 
         <TextView

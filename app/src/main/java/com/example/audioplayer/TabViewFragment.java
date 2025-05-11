@@ -45,7 +45,7 @@ public class TabViewFragment extends Fragment implements
     private ActivityResultLauncher<IntentSenderRequest> deleteLauncher;
 
     private Uri fileToRename, fileToDelete;
-    private String newFileName;
+    private String newFileName, newFileArtist;
 
     private static final String ARG_TAB_TYPE = "tab_type";
     private String tabType; // "songs" or "playlists"
@@ -89,7 +89,7 @@ public class TabViewFragment extends Fragment implements
             if ("songs".equals(tabType)) {
                 if (items != null) itemList.addAll(items);
             } else if ("playlists".equals(tabType)) {
-                itemList.add(new Item("In Development", "This feature is not implemented yet.", "", null));
+                itemList.add(new Item("In Development", "This feature is not implemented yet.", "", "", null));
             }
             adapter.notifyDataSetChanged();
         });
@@ -101,7 +101,7 @@ public class TabViewFragment extends Fragment implements
             if (result.getResultCode() == Activity.RESULT_OK && fileToRename != null && newFileName != null) {
                 String actualPath = MediaFileManager.getRealPathFromUri(context, fileToRename);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaFileManager.renameAudioFile(context, fileToRename, newFileName);
+                    MediaFileManager.renameAudioFile(context, fileToRename, newFileName, newFileArtist);
                 }
 
                 for (Item item : itemList) {
@@ -109,6 +109,7 @@ public class TabViewFragment extends Fragment implements
                         String oldName = actualPath.substring(actualPath.lastIndexOf('/') + 1, actualPath.lastIndexOf('.'));
                         item.setPath(actualPath.replace(oldName, newFileName));
                         item.setTitle(newFileName);
+                        item.setArtist(newFileArtist);
                         adapter.notifyDataSetChanged();
                         break;
                     }
@@ -137,7 +138,7 @@ public class TabViewFragment extends Fragment implements
     }
 
     @Override
-    public void onRenameRequested(Uri fileUri, String proposedName) {
+    public void onRenameRequested(Uri fileUri, String proposedName, String proposedArtist) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 PendingIntent pi = MediaStore.createWriteRequest(context.getContentResolver(), Collections.singletonList(fileUri));
@@ -145,6 +146,8 @@ public class TabViewFragment extends Fragment implements
 
                 fileToRename = fileUri;
                 newFileName = proposedName;
+                newFileArtist = proposedArtist;
+
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(context, "Rename permission failed", Toast.LENGTH_SHORT).show();

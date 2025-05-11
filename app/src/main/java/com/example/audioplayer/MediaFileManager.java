@@ -17,29 +17,37 @@ import androidx.annotation.RequiresApi;
 public class MediaFileManager {
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    public static void renameAudioFile(Context context, Uri fileUri, String newFileName) {
+    public static void renameAudioFile(Context context, Uri fileUri, String newFileName, String newArtist) {
         ContentResolver contentResolver = context.getContentResolver();
 
-        String[] projection = {MediaStore.Audio.Media.DISPLAY_NAME};
+        String[] projection = {
+                MediaStore.Audio.Media.DISPLAY_NAME,
+                MediaStore.Audio.Media.ARTIST
+        };
 
-        //Finds file to rename via its URI, then changes the display name.
         try (Cursor cursor = contentResolver.query(fileUri, projection, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
                 String currentDisplayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
 
+                // Get file extension from current display name
                 String fileExtension = "";
                 int dotIndex = currentDisplayName.lastIndexOf(".");
                 if (dotIndex > 0) {
                     fileExtension = currentDisplayName.substring(dotIndex);
                 }
 
-                if (isFileAlreadyExists(contentResolver, newFileName + fileExtension)) {
-                    Toast.makeText(context, "File with this name already exists", Toast.LENGTH_SHORT).show();
+                String newDisplayName = newFileName + fileExtension;
+
+                // Only show toast if another file exists with same name and same artist
+                if (isFileTitleAndArtistExists(contentResolver, newDisplayName, newArtist)) {
+                    Toast.makeText(context, "File with this name and artist already exists", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // Update both display name and artist
                 ContentValues values = new ContentValues();
-                values.put(MediaStore.Audio.Media.DISPLAY_NAME, newFileName + fileExtension);
+                values.put(MediaStore.Audio.Media.DISPLAY_NAME, newDisplayName);
+                values.put(MediaStore.Audio.Media.ARTIST, newArtist);
 
                 int updated = contentResolver.update(fileUri, values, null, null);
                 if (updated > 0) {
@@ -56,10 +64,11 @@ public class MediaFileManager {
             Toast.makeText(context, "Permission required to modify this file", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
+    //Use this in Android 10 or lower
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public static void deleteAudioFile(Context context, Uri fileUri) {
         try {
@@ -79,16 +88,19 @@ public class MediaFileManager {
         }
     }
 
+    // Helper function to check for same name and artist combo
+    private static boolean isFileTitleAndArtistExists(ContentResolver resolver, String displayName, String artistName) {
+        String selection = MediaStore.Audio.Media.DISPLAY_NAME + "=? AND " + MediaStore.Audio.Media.ARTIST + "=?";
+        String[] selectionArgs = {displayName, artistName};
 
-    //Checks if a file with the same display name already exists
-    private static boolean isFileAlreadyExists(ContentResolver contentResolver, String displayName) {
-        Uri audioUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.Media.DISPLAY_NAME};
-        String selection = MediaStore.Audio.Media.DISPLAY_NAME + "=?";
-        String[] selectionArgs = new String[]{displayName};
-
-        try (Cursor cursor = contentResolver.query(audioUri, projection, selection, selectionArgs, null)) {
-            return cursor != null && cursor.moveToFirst();
+        try (Cursor cursor = resolver.query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Audio.Media._ID},
+                selection,
+                selectionArgs,
+                null
+        )) {
+            return cursor != null && cursor.getCount() > 0;
         }
     }
 

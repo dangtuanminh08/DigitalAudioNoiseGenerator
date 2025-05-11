@@ -45,11 +45,12 @@ public class MusicRepository {
                     String filePath = cursor.getString(dataColumn);
                     String title = cursor.getString(titleColumn);
                     title = title.substring(0, title.lastIndexOf('.'));
-                    String artist = cursor.getString(artistColumn);
+                    String artist = cursor.getString(artistColumn).equals("<unknown>") ? "( •̀ ω •́ )" : cursor.getString(artistColumn);
+                    Log.d("TAG", artist);
                     long duration = cursor.getLong(durationColumn);
                     String formattedDuration = formatDuration(duration);
 
-                    musicItemList.add(new Item(title, String.format("%s • %s", artist, formattedDuration), filePath, fileUri));
+                    musicItemList.add(new Item(title, artist, filePath, formattedDuration, fileUri));
                 } while (cursor.moveToNext());
             }
         } catch (Exception e) {

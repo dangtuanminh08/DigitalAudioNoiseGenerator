@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DANG!</string>
-    <string name="unknown_artist">Unknown Artist</string>
-    <string name="unknown_title">Unknown Title</string>
+    <string name="unknown_artist">( •̀ ω •́ )</string>
+    <string name="unknown_title">( •̀ ω •́ )</string>
     <string name="rename">Rename</string>
     <string name="delete">Delete</string>
     <string name="title_hint">Enter new name</string>

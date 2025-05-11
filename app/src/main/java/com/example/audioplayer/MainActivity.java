@@ -1,5 +1,6 @@
 package com.example.audioplayer;
 
+import static android.Manifest.permission.FOREGROUND_SERVICE;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
 
@@ -170,6 +171,12 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(POST_NOTIFICATIONS);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(FOREGROUND_SERVICE);
+
         }
 
         if (permissionsNeeded.isEmpty()) {

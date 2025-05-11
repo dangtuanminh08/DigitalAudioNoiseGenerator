@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -33,7 +35,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     }
 
     public interface OnRenameRequestListener {
-        void onRenameRequested(Uri fileUri, String proposedName);
+        void onRenameRequested(Uri fileUri, String proposedName, String proposedArtist);
     }
 
     public interface OnDeleteRequestListener {
@@ -78,15 +80,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         Context context = holder.itemView.getContext();
 
         holder.titleTextView.setText(item.getTitle());
-        holder.artistTextView.setText(item.getArtist());
+        holder.artistTextView.setText(String.format("%s • %s", item.getArtist(), item.getDuration()));
         holder.imageView.setImageResource(imageResId[position % imageResId.length]);
 
         // Highlight the currently playing song (either user tapped or the one being played)
         int currentPlayingPosition = -1;
+        int primaryTextColor = getThemeColor(context, android.R.attr.textColorPrimary);
         holder.titleTextView.setTextColor(
                 position == selectedPosition || position == currentPlayingPosition
                         ? Color.argb(255, 255, 133, 182)
-                        : Color.WHITE
+                        : primaryTextColor
         );
 
         holder.itemView.setOnClickListener(v -> {
@@ -146,10 +149,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
                 .setView(dialogView)
                 .setPositiveButton("Save", (dialog, which) -> {
                     String newTitle = editTitle.getText().toString().trim();
+                    String newArtist = editArtist.getText().toString().trim();
                     if (!newTitle.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         Uri uri = MediaFileManager.getAudioContentUriFromPath(context, item.getPath());
                         if (renameListener != null && uri != null) {
-                            renameListener.onRenameRequested(uri, newTitle);
+                            renameListener.onRenameRequested(uri, newTitle, newArtist);
                         }
                     }
                 })
@@ -160,7 +164,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     private void confirmDeletion(Item item, Context context) {
         new AlertDialog.Builder(context)
                 .setMessage("Are you sure you want to delete \"" + item.getTitle() + "\"?")
-                .setPositiveButton("Pretty sure", (dialog, which) -> {
+                .setPositiveButton("Delete", (dialog, which) -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         Uri uri = item.getUri();
                         if (deleteListener != null && uri != null) {
@@ -175,5 +179,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     @Override
     public int getItemCount() {
         return itemList.size();
+    }
+
+    //Gets a specific color from theme attribute (dark or light)
+    private int getThemeColor(Context context, int attrResId) {
+        TypedValue typedValue = new TypedValue();
+        context.getTheme().resolveAttribute(attrResId, typedValue, true);
+        return ContextCompat.getColor(context, typedValue.resourceId);
     }
 }

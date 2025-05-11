@@ -8,12 +8,14 @@ public class Item implements Parcelable {
     private String title;
     private String artist;
     private String path;
+    private final String duration;
     private final Uri uri;
 
-    public Item(String title, String artist, String path, Uri uri) {
+    public Item(String title, String artist, String path, String duration, Uri uri) {
         this.title = title;
         this.artist = artist;
         this.path = path;
+        this.duration = duration;
         this.uri = uri;
     }
 
@@ -21,6 +23,7 @@ public class Item implements Parcelable {
         title = in.readString();
         artist = in.readString();
         path = in.readString();
+        duration = in.readString();
         uri = in.readParcelable(Uri.class.getClassLoader());
     }
 
@@ -46,6 +49,10 @@ public class Item implements Parcelable {
 
     public String getPath() {
         return path;
+    }
+
+    public String getDuration() {
+        return duration;
     }
 
     public Uri getUri() {
@@ -74,6 +81,7 @@ public class Item implements Parcelable {
         dest.writeString(title);
         dest.writeString(artist);
         dest.writeString(path);
+        dest.writeString(duration);
         dest.writeParcelable(uri, flags);
     }
 }
