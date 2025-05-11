@@ -1,5 +1,5 @@
 ## Digital Audio/Noise Generator! (DANG!) 📼
-This project is an ad-less Android app for playing audio files completely offline.\
+This project is a simple, ad-less Android app for playing audio files completely offline.\
 This app is designed for myself, but you can easily customize it to your liking! (tutorial for that soon)
 
 ### Current Features ⚙️
