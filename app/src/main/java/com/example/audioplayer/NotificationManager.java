@@ -1,5 +1,6 @@
 package com.example.audioplayer;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -37,6 +38,8 @@ public class NotificationManager {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final int NOTIFICATION_ID = 1;
     private final String CHANNEL_ID = "media_playback_channel";
+
+    private static Notification notification;
 
 
     private final Runnable updateProgress = new Runnable() {
@@ -114,6 +117,12 @@ public class NotificationManager {
                 == PackageManager.PERMISSION_GRANTED) {
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
         }
+
+        notification = builder.build();
+    }
+
+    public static Notification getNotification() {
+        return notification;
     }
 
     @OptIn(markerClass = UnstableApi.class)

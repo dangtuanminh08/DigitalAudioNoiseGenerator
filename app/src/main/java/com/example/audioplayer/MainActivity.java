@@ -67,6 +67,11 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        player = PlayerManager.getPlayer(this);
+        PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
+        Intent serviceIntent = new Intent(this, ForegroundService.class);
+        ContextCompat.startForegroundService(this, serviceIntent);
+
         viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
         setupInsets();
         setupTabs();
@@ -80,8 +85,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         });
 
         checkAndRequestPermissions();
-
-        player = PlayerManager.getPlayer(this);
         setupPlayerListeners();
     }
 

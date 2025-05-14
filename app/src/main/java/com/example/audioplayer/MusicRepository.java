@@ -46,7 +46,6 @@ public class MusicRepository {
                     String title = cursor.getString(titleColumn);
                     title = title.substring(0, title.lastIndexOf('.'));
                     String artist = cursor.getString(artistColumn).equals("<unknown>") ? "( •̀ ω •́ )" : cursor.getString(artistColumn);
-                    Log.d("TAG", artist);
                     long duration = cursor.getLong(durationColumn);
                     String formattedDuration = formatDuration(duration);
 

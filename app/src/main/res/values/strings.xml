@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">DANG!</string>
-    <string name="unknown_artist">( •̀ ω •́ )</string>
-    <string name="unknown_title">( •̀ ω •́ )</string>
+    <string name="app_name" translatable="false">DANG!</string>
+    <string name="unknown_artist" translatable="false">( •̀ ω •́ )</string>
+    <string name="unknown_title" translatable="false">( •̀ ω •́ )</string>
+    <string name="beginning_notif_message">Play a song to use this notification!</string>
     <string name="rename">Rename</string>
     <string name="delete">Delete</string>
     <string name="title_hint">Enter new name</string>
