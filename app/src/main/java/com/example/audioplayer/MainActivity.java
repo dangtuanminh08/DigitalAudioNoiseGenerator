@@ -68,7 +68,10 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         setContentView(R.layout.activity_main);
 
         player = PlayerManager.getPlayer(this);
-        PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
+        if (ForegroundService.getNotification() == null) {
+            PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
+        }
+
         Intent serviceIntent = new Intent(this, ForegroundService.class);
         ContextCompat.startForegroundService(this, serviceIntent);
 
@@ -238,14 +241,5 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     @Override
     public void onSongClick(String songName, String songArtist) {
         //Should do nothing
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (player != null) {
-            player.release();
-            player = null;
-        }
     }
 }
