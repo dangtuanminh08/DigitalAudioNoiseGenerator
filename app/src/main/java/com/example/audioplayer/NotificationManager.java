@@ -199,7 +199,7 @@ public class NotificationManager {
                 PlayerManager.release();
                 handler.removeCallbacksAndMessages(null);
                 NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID);
-
+                context.stopService(new Intent(context, ForegroundService.class));
             }
         }
     }
