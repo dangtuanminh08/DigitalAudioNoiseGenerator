@@ -98,7 +98,7 @@ public class PlayerActivity extends AppCompatActivity {
         btnPrev.setOnClickListener(v -> prevSong());
         btnShuffle.setOnClickListener(v -> toggleShuffle());
         btnRepeat.setOnClickListener(v -> toggleRepeat());
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> exitActivity());
 
         if (playerMenu != null) {
             playerMenu.setOnClickListener(v -> showBottomSheet());
@@ -201,8 +201,12 @@ public class PlayerActivity extends AppCompatActivity {
     //Helper functions for UX
 
     private void togglePlayPause() {
-        if (player.isPlaying()) player.pause();
-        else player.play();
+        if (player.isPlaying()) {
+            handler.removeCallbacks(updateRunnable);
+            player.pause();
+        } else {
+            player.play();
+        }
     }
 
     private void nextSong() {
@@ -251,6 +255,11 @@ public class PlayerActivity extends AppCompatActivity {
     private String getRepeatModeText(int mode) {
         return mode == Player.REPEAT_MODE_ONE ? "Repeat song" :
                 mode == Player.REPEAT_MODE_ALL ? "Repeat queue" : "Repeat off";
+    }
+
+    private void exitActivity() {
+        handler.removeCallbacks(updateRunnable);
+        finish();
     }
 
     private void updateSeekBarAndTime() {
@@ -344,8 +353,23 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(updateRunnable);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        if (player != null && player.isPlaying()) {
+            startUpdatingSeekBar();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(updateRunnable);
+        if (playGif != null) playGif.recycle();
+        if (pauseGif != null) pauseGif.recycle();
     }
 }

@@ -11,11 +11,13 @@ import androidx.annotation.Nullable;
 public class ForegroundService extends Service {
 
     private static Notification notification;
+    private static boolean isRunning;
 
     @Override
     public void onCreate() {
         super.onCreate();
         PlayerManager.getPlayer(getApplicationContext());
+        isRunning = true;
     }
 
     public static Notification getNotification() {
@@ -35,6 +37,11 @@ public class ForegroundService extends Service {
         return START_STICKY;
     }
 
+
+    public static boolean isRunning() {
+        return isRunning;
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -44,6 +51,7 @@ public class ForegroundService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        isRunning = false;
         PlayerManager.release();
     }
 }

@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
@@ -59,6 +60,14 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     private GifImageView miniPlayPause;
     private GifDrawable playGif, pauseGif;
 
+    private final Observer<List<Item>> musicFilesObserver = items -> {
+        queue.clear();
+        queue.addAll(items);
+        ((TextView) findViewById(R.id.textView)).setText(
+                String.format(Locale.CANADA, "Number of songs: %d", queue.size())
+        );
+    };
+
     @SuppressLint("NotifyDataSetChanged")
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -72,8 +81,13 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
             PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
         }
 
-        Intent serviceIntent = new Intent(this, ForegroundService.class);
-        ContextCompat.startForegroundService(this, serviceIntent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!ForegroundService.isRunning()) {
+                Intent serviceIntent = new Intent(this, ForegroundService.class);
+                ContextCompat.startForegroundService(this, serviceIntent);
+            }
+        }
 
         viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
         setupInsets();
@@ -81,11 +95,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         setupMiniPlayerView();
         initGifs();
 
-        viewModel.getMusicFiles().observe(this, items -> {
-            queue.clear();
-            queue.addAll(items);
-            ((TextView) findViewById(R.id.textView)).setText(String.format(Locale.CANADA, "Number of songs: %d", queue.size()));
-        });
+        viewModel.getMusicFiles().observe(this, musicFilesObserver);
 
         checkAndRequestPermissions();
         setupPlayerListeners();
@@ -218,8 +228,28 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     protected void onResume() {
         super.onResume();
         updateMiniPlayer();
+        playGif.start();
+        pauseGif.start();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        playGif.stop();
+        pauseGif.stop();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        viewModel.getMusicFiles().observe(this, musicFilesObserver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        viewModel.getMusicFiles().removeObserver(musicFilesObserver);
+    }
     private void updateMiniPlayer() {
         if (player == null || player.getCurrentMediaItem() == null || queue.isEmpty()) {
             miniPlayer.setVisibility(View.GONE);
@@ -228,11 +258,17 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
 
         int index = player.getCurrentMediaItemIndex();
         if (index >= queue.size()) index = 0;
-
         Item currentItem = queue.get(index);
+
+        if (currentItem.getTitle().contentEquals(miniSongTitle.getText()) &&
+                currentItem.getArtist().contentEquals(miniSongArtist.getText())) {
+            return; // No update needed
+        }
+
         miniSongTitle.setText(currentItem.getTitle());
         miniSongArtist.setText(currentItem.getArtist());
         miniPlayer.setVisibility(View.VISIBLE);
+
 
         miniPlayPause.setImageDrawable(player.isPlaying() ? playGif : pauseGif);
     }
