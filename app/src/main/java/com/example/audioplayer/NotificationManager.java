@@ -75,8 +75,10 @@ public class NotificationManager {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "DANG! Playback",
-                    android.app.NotificationManager.IMPORTANCE_DEFAULT
+                    android.app.NotificationManager.IMPORTANCE_LOW
             );
+            channel.setSound(null, null);
+            channel.enableVibration(false);
             channel.setDescription("Audio Player Channel");
             android.app.NotificationManager notificationManager =
                     (android.app.NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -108,6 +110,7 @@ public class NotificationManager {
                 .addAction(R.drawable.next_song, "Next", nextIntent)
                 .addAction(androidx.media3.session.R.drawable.media3_icon_block, "Release", releaseIntent)
                 .setOngoing(true);
+
 
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.getDuration())

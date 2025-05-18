@@ -85,9 +85,11 @@ public class TabViewFragment extends Fragment implements
     private void setupViewModel() {
         MusicViewModel viewModel = new ViewModelProvider(requireActivity()).get(MusicViewModel.class);
         viewModel.getMusicFiles().observe(getViewLifecycleOwner(), items -> {
+            if (items == null || items.equals(itemList)) return;
+
             itemList.clear();
             if ("songs".equals(tabType)) {
-                if (items != null) itemList.addAll(items);
+                itemList.addAll(items);
             } else if ("playlists".equals(tabType)) {
                 itemList.add(new Item("In Development", "This feature is not implemented yet.", "", "", null));
             }
