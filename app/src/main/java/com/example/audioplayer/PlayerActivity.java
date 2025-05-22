@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -306,7 +307,8 @@ public class PlayerActivity extends AppCompatActivity {
     //Bottom sheet for playback speed and pitch
     private void showBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = LayoutInflater.from(this).inflate(R.layout.player_settings, null);
+        ViewGroup root = findViewById(android.R.id.content);
+        View view = LayoutInflater.from(this).inflate(R.layout.player_settings, root, false);
 
         TextView speedText = view.findViewById(R.id.speed_text);
         TextView pitchText = view.findViewById(R.id.pitch_text);
@@ -363,6 +365,8 @@ public class PlayerActivity extends AppCompatActivity {
         if (player != null && player.isPlaying()) {
             startUpdatingSeekBar();
         }
+        assert player != null;
+        updatePlaybackIcons(player.isPlaying());
     }
 
     @Override

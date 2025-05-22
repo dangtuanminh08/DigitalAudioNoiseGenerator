@@ -203,6 +203,15 @@ public class NotificationManager {
                 handler.removeCallbacksAndMessages(null);
                 NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID);
                 context.stopService(new Intent(context, ForegroundService.class));
+
+                Intent restartIntent = context.getPackageManager()
+                        .getLaunchIntentForPackage(context.getPackageName());
+
+                if (restartIntent != null) {
+                    restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    context.startActivity(restartIntent);
+                }
             }
         }
     }

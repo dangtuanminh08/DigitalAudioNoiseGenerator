@@ -85,7 +85,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
 
         // Highlight the currently playing song (either user tapped or the one being played)
         int currentPlayingPosition = -1;
-        int primaryTextColor = getThemeColor(context, android.R.attr.textColorPrimary);
+        int primaryTextColor = getThemeColor(context);
         holder.titleTextView.setTextColor(
                 position == selectedPosition || position == currentPlayingPosition
                         ? Color.argb(255, 255, 133, 182)
@@ -93,11 +93,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         );
 
         holder.itemView.setOnClickListener(v -> {
-            int previousPosition = selectedPosition;
-            selectedPosition = holder.getBindingAdapterPosition();
-            notifyItemChanged(previousPosition);
-            notifyItemChanged(selectedPosition);
-
             String itemName = item.getTitle();
             String itemArtist = item.getArtist();
             if (listener != null) {
@@ -182,9 +177,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
     }
 
     //Gets a specific color from theme attribute (dark or light)
-    private int getThemeColor(Context context, int attrResId) {
+    private int getThemeColor(Context context) {
         TypedValue typedValue = new TypedValue();
-        context.getTheme().resolveAttribute(attrResId, typedValue, true);
+        context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, typedValue, true);
         return ContextCompat.getColor(context, typedValue.resourceId);
     }
 }
