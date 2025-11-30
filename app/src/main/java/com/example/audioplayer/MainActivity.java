@@ -1,5 +1,6 @@
 package com.example.audioplayer;
 
+import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.FOREGROUND_SERVICE;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
@@ -80,13 +81,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         if (ForegroundService.getNotification() == null) {
             PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
         }
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!ForegroundService.isRunning()) {
-                Intent serviceIntent = new Intent(this, ForegroundService.class);
-                ContextCompat.startForegroundService(this, serviceIntent);
-            }
+        if (!ForegroundService.isRunning()) {
+            Intent serviceIntent = new Intent(this, ForegroundService.class);
+            ContextCompat.startForegroundService(this, serviceIntent);
         }
 
         viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
@@ -184,15 +181,16 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(READ_MEDIA_AUDIO);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(POST_NOTIFICATIONS);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(FOREGROUND_SERVICE);
+        }
 
+        if (ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(BLUETOOTH_CONNECT);
         }
 
         if (permissionsNeeded.isEmpty()) {

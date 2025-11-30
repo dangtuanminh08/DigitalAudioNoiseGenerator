@@ -59,6 +59,12 @@ public class PlayerManager {
         notificationManager.showNotification(title, artist);
     }
 
+    public static void pauseCheck() {
+        if (player != null && player.isPlaying()) {
+            player.pause();
+        }
+    }
+
     public static void release() {
         if (player != null) {
             player.release();
