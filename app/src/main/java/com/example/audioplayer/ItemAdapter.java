@@ -84,10 +84,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         holder.imageView.setImageResource(imageResId[position % imageResId.length]);
 
         // Highlight the currently playing song (either user tapped or the one being played)
-        int currentPlayingPosition = -1;
         int primaryTextColor = getThemeColor(context);
         holder.titleTextView.setTextColor(
-                position == selectedPosition || position == currentPlayingPosition
+                position == selectedPosition
                         ? Color.argb(255, 255, 133, 182)
                         : primaryTextColor
         );
