@@ -31,7 +31,7 @@ public class NotificationManager {
     private final Context context;
     private static ExoPlayer player;
     private static MediaSessionCompat mediaSession;
-    private final List<String> queue;
+    private List<String> queue;
 
     private final Bitmap largeIcon;
 
@@ -47,7 +47,7 @@ public class NotificationManager {
         public void run() {
             if (player.isPlaying()) {
                 updatePlaybackState(PlaybackStateCompat.STATE_PLAYING);
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 15000);
             }
         }
     };
@@ -95,7 +95,9 @@ public class NotificationManager {
         PendingIntent prevIntent = createPendingIntent("ACTION_PREVIOUS");
         PendingIntent releaseIntent = createPendingIntent("ACTION_RELEASE");
 
-        String playPauseLabel = player.isPlaying() ? "Pause" : "Play";
+        boolean isPlaying = player.isPlaying();
+        String playPauseLabel = isPlaying ? "Pause" : "Play";
+        int playPauseIcon = isPlaying ? R.drawable.pause : R.drawable.play;
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification_icon)
@@ -105,7 +107,7 @@ public class NotificationManager {
                 .setStyle(new MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2, 3))
-                .addAction(R.drawable.pause, playPauseLabel, playPauseIntent)
+                .addAction(playPauseIcon, playPauseLabel, playPauseIntent)
                 .addAction(R.drawable.prev_song, "Previous", prevIntent)
                 .addAction(R.drawable.next_song, "Next", nextIntent)
                 .addAction(androidx.media3.session.R.drawable.media3_icon_block, "Release", releaseIntent)
@@ -170,23 +172,12 @@ public class NotificationManager {
 
         @Override
         public void onSkipToNext() {
-            if (player.getCurrentMediaItemIndex() == queue.size() - 1) {
-                player.seekTo(0, 0);
-            } else {
-                player.seekToNextMediaItem();
-            }
-            player.play();
+            PlayerManager.skipToNext();
         }
 
         @Override
         public void onSkipToPrevious() {
-            long pos = player.getCurrentPosition();
-            if ((player.getCurrentMediaItemIndex() == 0 && pos < 7000) || pos < 7000) {
-                player.seekTo((player.getCurrentMediaItemIndex() == 0) ? queue.size() - 1 : player.getCurrentMediaItemIndex() - 1, 0);
-            } else {
-                player.seekTo(0);
-            }
-            player.play();
+            PlayerManager.skipToPrevious();
         }
 
         @Override

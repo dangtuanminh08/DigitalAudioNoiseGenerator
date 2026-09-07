@@ -42,7 +42,6 @@ public class ForegroundService extends Service {
         } else {
             stopSelf(); //Stop if notification is not ready
         }
-
         return START_STICKY;
     }
 
@@ -64,5 +63,6 @@ public class ForegroundService extends Service {
             unregisterReceiver(bluetoothReceiver);
             isReceiverRegistered = false;
         }
+        isRunning = false;
     }
 }

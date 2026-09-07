@@ -1,11 +1,9 @@
 package com.example.audioplayer;
 
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
-import static android.Manifest.permission.FOREGROUND_SERVICE;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,10 +32,6 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +42,7 @@ import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSongClickListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
 
@@ -69,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         );
     };
 
-    @SuppressLint("NotifyDataSetChanged")
     @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
 
         viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
         setupInsets();
-        setupTabs();
+        setupFragment();
         setupMiniPlayerView();
         initGifs();
 
@@ -106,17 +99,14 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         });
     }
 
-    private void setupTabs() {
-        TabLayout tabLayout = findViewById(R.id.tabLayout);
-        ViewPager2 viewPager = findViewById(R.id.viewPager);
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
-        viewPager.setAdapter(adapter);
-
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) ->
-                tab.setText(position == 0 ? "Songs" : "Playlists")
-        ).attach();
+    private void setupFragment() {
+        if (getSupportFragmentManager().findFragmentById(R.id.fragment_container) == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, ViewFragment.newInstance())
+                    .commit();
+        }
     }
-
     //Sets up mini player at the bottom
     @OptIn(markerClass = UnstableApi.class)
     private void setupMiniPlayerView() {
@@ -181,12 +171,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(READ_MEDIA_AUDIO);
         }
+
         if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(POST_NOTIFICATIONS);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(FOREGROUND_SERVICE);
         }
 
         if (ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -226,8 +213,9 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
     protected void onResume() {
         super.onResume();
         updateMiniPlayer();
-        playGif.start();
-        pauseGif.start();
+        if (player != null && miniPlayer.getVisibility() == View.VISIBLE) {
+            (player.isPlaying() ? playGif : pauseGif).start();
+        }
     }
 
     @Override
@@ -235,18 +223,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         super.onPause();
         playGif.stop();
         pauseGif.stop();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        viewModel.getMusicFiles().observe(this, musicFilesObserver);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        viewModel.getMusicFiles().removeObserver(musicFilesObserver);
     }
     private void updateMiniPlayer() {
         if (player == null || player.getCurrentMediaItem() == null || queue.isEmpty()) {
@@ -266,14 +242,6 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnSon
         miniSongTitle.setText(currentItem.getTitle());
         miniSongArtist.setText(currentItem.getArtist());
         miniPlayer.setVisibility(View.VISIBLE);
-
-
         miniPlayPause.setImageDrawable(player.isPlaying() ? playGif : pauseGif);
-    }
-
-    @OptIn(markerClass = UnstableApi.class)
-    @Override
-    public void onSongClick(String songName, String songArtist) {
-        //Should do nothing
     }
 }

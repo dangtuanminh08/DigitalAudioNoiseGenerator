@@ -200,7 +200,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     //Helper functions for UX
-
     private void togglePlayPause() {
         if (player.isPlaying()) {
             handler.removeCallbacks(updateRunnable);
@@ -211,21 +210,11 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void nextSong() {
-        if (player.getCurrentMediaItemIndex() == queue.size() - 1) {
-            player.seekTo(0, 0);
-        } else {
-            player.seekToNextMediaItem();
-        }
-
+        PlayerManager.skipToNext();
     }
 
     private void prevSong() {
-        long pos = player.getCurrentPosition();
-        if (pos < 7000) {
-            player.seekTo((player.getCurrentMediaItemIndex() == 0) ? queue.size() - 1 : player.getCurrentMediaItemIndex() - 1, 0);
-        } else {
-            player.seekTo(0);
-        }
+        PlayerManager.skipToPrevious();
     }
 
     private void toggleShuffle() {
@@ -290,7 +279,7 @@ public class PlayerActivity extends AppCompatActivity {
         PlayerManager.showMediaNotification(name, "( •̀ ω •́ )");
         NotificationManager.updatePlaybackState(player.isPlaying() ? 3 : 2);
 
-        ItemAdapter itemAdapter = TabViewFragment.adapter;
+        ItemAdapter itemAdapter = ViewFragment.adapter;
         itemAdapter.setCurrentPlayingSong(queue.indexOf(path));
     }
 

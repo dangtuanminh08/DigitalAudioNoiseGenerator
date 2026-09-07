@@ -59,12 +59,33 @@ public class PlayerManager {
         notificationManager.showNotification(title, artist);
     }
 
+    public static void skipToNext() {
+        if (player == null || queue.isEmpty()) return;
+        if (player.getCurrentMediaItemIndex() == queue.size() - 1) {
+            player.seekTo(0, 0);
+        } else {
+            player.seekToNextMediaItem();
+        }
+        player.play();
+    }
+
+    public static void skipToPrevious() {
+        if (player == null || queue.isEmpty()) return;
+        long pos = player.getCurrentPosition();
+        int currentIndex = player.getCurrentMediaItemIndex();
+        if (pos < 7000) {
+            player.seekTo(currentIndex == 0 ? queue.size() - 1 : currentIndex - 1, 0);
+        } else {
+            player.seekTo(0);
+        }
+        player.play();
+    }
+
     public static void pauseCheck() {
         if (player != null && player.isPlaying()) {
             player.pause();
         }
     }
-
     public static void release() {
         if (player != null) {
             player.release();

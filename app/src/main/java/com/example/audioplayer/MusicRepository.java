@@ -43,9 +43,16 @@ public class MusicRepository {
                     long id = cursor.getLong(idColumn);
                     Uri fileUri = Uri.withAppendedPath(musicUri, String.valueOf(id));
                     String filePath = cursor.getString(dataColumn);
+
                     String title = cursor.getString(titleColumn);
-                    title = title.substring(0, title.lastIndexOf('.'));
-                    String artist = cursor.getString(artistColumn).equals("<unknown>") ? "( •̀ ω •́ )" : cursor.getString(artistColumn);
+                    int dotIndex = title.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        title = title.substring(0, dotIndex);
+                    }
+
+                    String rawArtist = cursor.getString(artistColumn);
+                    String artist = (rawArtist == null || rawArtist.equals("<unknown>")) ? "( •̀ ω •́ )" : rawArtist;
+
                     long duration = cursor.getLong(durationColumn);
                     String formattedDuration = formatDuration(duration);
 

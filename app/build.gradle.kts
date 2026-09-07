@@ -35,6 +35,7 @@ android {
 dependencies {
 
     implementation(libs.appcompat)
+    implementation(libs.fragment)
     implementation(libs.material)
     implementation(libs.material.v1110)
     implementation(libs.media3.exoplayer)

@@ -92,6 +92,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
         );
 
         holder.itemView.setOnClickListener(v -> {
+            if (item.getPath() == null || item.getPath().isEmpty()) return;
             String itemName = item.getTitle();
             String itemArtist = item.getArtist();
             if (listener != null) {
@@ -144,7 +145,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.MyViewHolder> 
                 .setPositiveButton("Save", (dialog, which) -> {
                     String newTitle = editTitle.getText().toString().trim();
                     String newArtist = editArtist.getText().toString().trim();
-                    if (!newTitle.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (!newTitle.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         Uri uri = MediaFileManager.getAudioContentUriFromPath(context, item.getPath());
                         if (renameListener != null && uri != null) {
                             renameListener.onRenameRequested(uri, newTitle, newArtist);

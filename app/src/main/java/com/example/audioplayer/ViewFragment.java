@@ -32,7 +32,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class TabViewFragment extends Fragment implements
+import androidx.media3.common.Player;
+
+public class ViewFragment extends Fragment implements
         ItemAdapter.OnSongClickListener,
         ItemAdapter.OnRenameRequestListener,
         ItemAdapter.OnDeleteRequestListener {
@@ -47,13 +49,11 @@ public class TabViewFragment extends Fragment implements
     private Uri fileToRename, fileToDelete;
     private String newFileName, newFileArtist;
 
-    private static final String ARG_TAB_TYPE = "tab_type";
-    private String tabType; // "songs" or "playlists"
-
-    public static TabViewFragment newInstance(String tabType) {
-        TabViewFragment fragment = new TabViewFragment();
+    private Player.Listener playbackHighlightListener;
+    private ExoPlayer highlightPlayer;
+    public static ViewFragment newInstance() {
+        ViewFragment fragment = new ViewFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_TAB_TYPE, tabType);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,13 +71,11 @@ public class TabViewFragment extends Fragment implements
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter = new ItemAdapter(itemList, this, this, this));
         recyclerView.setVerticalScrollBarEnabled(false);
-        recyclerView.addItemDecoration(new TopSpacingItemDecoration(64));
-
-        tabType = getArguments() != null ? getArguments().getString(ARG_TAB_TYPE, "songs") : "songs";
 
         setupViewModel();
         setupRenameLauncher();
         setupDeleteLauncher();
+        setupPlaybackHighlightListener();
 
         return view;
     }
@@ -88,11 +86,7 @@ public class TabViewFragment extends Fragment implements
             if (items == null || items.equals(itemList)) return;
 
             itemList.clear();
-            if ("songs".equals(tabType)) {
-                itemList.addAll(items);
-            } else if ("playlists".equals(tabType)) {
-                itemList.add(new Item("In Development", "This feature is not implemented yet.", "", "", null));
-            }
+            itemList.addAll(items);
             adapter.notifyDataSetChanged();
         });
     }
@@ -108,8 +102,10 @@ public class TabViewFragment extends Fragment implements
 
                 for (Item item : itemList) {
                     if (item.getPath().equals(actualPath)) {
-                        String oldName = actualPath.substring(actualPath.lastIndexOf('/') + 1, actualPath.lastIndexOf('.'));
-                        item.setPath(actualPath.replace(oldName, newFileName));
+                        int dotIndex = actualPath.lastIndexOf('.');
+                        String extension = dotIndex > 0 ? actualPath.substring(dotIndex) : "";
+                        String parentDir = actualPath.substring(0, actualPath.lastIndexOf('/') + 1);
+                        item.setPath(parentDir + newFileName + extension);
                         item.setTitle(newFileName);
                         item.setArtist(newFileArtist);
                         adapter.notifyDataSetChanged();
@@ -175,33 +171,16 @@ public class TabViewFragment extends Fragment implements
         }
     }
 
-    public static class TopSpacingItemDecoration extends RecyclerView.ItemDecoration {
-        private final int topSpacing;
-
-        public TopSpacingItemDecoration(int topSpacing) {
-            this.topSpacing = topSpacing;
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
-                                   @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            if (parent.getChildAdapterPosition(view) == 0) {
-                outRect.top = topSpacing;
-            }
-        }
-    }
-
     @OptIn(markerClass = UnstableApi.class)
     @Override
     public void onSongClick(String songName, String songArtist) {
-        ExoPlayer player = PlayerManager.getPlayer(context);
-        ArrayList<String> queue = PlayerManager.getQueue();
-        queue.clear();
-
+        ArrayList<String> queue = new ArrayList<>();
         for (Item item : itemList) {
             queue.add(item.getPath());
-            player.addMediaItem(MediaItem.fromUri(item.getPath()));
         }
+
+        PlayerManager.prepareQueue(queue);
+        ExoPlayer player = PlayerManager.getPlayer(context);
 
         int position = getSongPosition(songName);
         player.seekTo(position, 0);
@@ -215,6 +194,19 @@ public class TabViewFragment extends Fragment implements
         player.play();
     }
 
+    private void setupPlaybackHighlightListener() {
+        highlightPlayer = PlayerManager.getPlayer(context);
+        ItemAdapter thisTabAdapter = adapter;
+
+        playbackHighlightListener = new Player.Listener() {
+            @Override
+            public void onMediaItemTransition(MediaItem mediaItem, int reason) {
+                thisTabAdapter.setCurrentPlayingSong(highlightPlayer.getCurrentMediaItemIndex());
+            }
+        };
+        highlightPlayer.addListener(playbackHighlightListener);
+    }
+
     private int getSongPosition(String songName) {
         for (int i = 0; i < itemList.size(); i++) {
             if (itemList.get(i).getTitle().equals(songName)) {
@@ -222,5 +214,13 @@ public class TabViewFragment extends Fragment implements
             }
         }
         return 0;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (highlightPlayer != null && playbackHighlightListener != null) {
+            highlightPlayer.removeListener(playbackHighlightListener);
+        }
     }
 }

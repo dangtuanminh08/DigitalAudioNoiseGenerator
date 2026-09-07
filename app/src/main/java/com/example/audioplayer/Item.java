@@ -3,6 +3,7 @@ package com.example.audioplayer;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import java.util.Objects;
 
 public class Item implements Parcelable {
     private String title;
@@ -54,7 +55,6 @@ public class Item implements Parcelable {
     public String getDuration() {
         return duration;
     }
-
     public Uri getUri() {
         return uri;
     }
@@ -62,13 +62,24 @@ public class Item implements Parcelable {
     public void setTitle(String newTitle) {
         this.title = newTitle;
     }
-
     public void setArtist(String newArtist) {
         this.artist = newArtist;
     }
-
     public void setPath(String newPath) {
         this.path = newPath;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Item)) return false;
+        Item item = (Item) o;
+        return title.equals(item.title) &&
+                artist.equals(item.artist) &&
+                path.equals(item.path);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, artist, path);
     }
 
     @Override
