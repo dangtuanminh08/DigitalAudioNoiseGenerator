@@ -11,3 +11,6 @@
 *.aab
 *.ap_
 *.dex
+.idea/
+*.iml
+.vscode/
