@@ -4,13 +4,13 @@ plugins {
 
 android {
     namespace = "com.example.audioplayer"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.audioplayer"
-        minSdk = 24
+        minSdk = 26
         //noinspection EditedTargetSdkVersion
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.fragment)
     implementation(libs.material)
-    implementation(libs.material.v1110)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.session)

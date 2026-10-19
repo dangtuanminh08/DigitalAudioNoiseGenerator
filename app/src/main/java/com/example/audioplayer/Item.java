@@ -1,44 +1,26 @@
 package com.example.audioplayer;
 
 import android.net.Uri;
-import android.os.Parcel;
-import android.os.Parcelable;
+
+import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
-public class Item implements Parcelable {
-    private String title;
-    private String artist;
-    private String path;
+public class Item {
+    private final String title;
+    private final String artist;
+    @Nullable
+    private final String path;
     private final String duration;
     private final Uri uri;
 
-    public Item(String title, String artist, String path, String duration, Uri uri) {
+    public Item(String title, String artist, @Nullable String path, String duration, Uri uri) {
         this.title = title;
         this.artist = artist;
         this.path = path;
         this.duration = duration;
         this.uri = uri;
     }
-
-    protected Item(Parcel in) {
-        title = in.readString();
-        artist = in.readString();
-        path = in.readString();
-        duration = in.readString();
-        uri = in.readParcelable(Uri.class.getClassLoader());
-    }
-
-    public static final Creator<Item> CREATOR = new Creator<Item>() {
-        @Override
-        public Item createFromParcel(Parcel in) {
-            return new Item(in);
-        }
-
-        @Override
-        public Item[] newArray(int size) {
-            return new Item[size];
-        }
-    };
 
     public String getTitle() {
         return title;
@@ -48,6 +30,7 @@ public class Item implements Parcelable {
         return artist;
     }
 
+    @Nullable
     public String getPath() {
         return path;
     }
@@ -55,44 +38,33 @@ public class Item implements Parcelable {
     public String getDuration() {
         return duration;
     }
+
     public Uri getUri() {
         return uri;
     }
 
-    public void setTitle(String newTitle) {
-        this.title = newTitle;
-    }
-    public void setArtist(String newArtist) {
-        this.artist = newArtist;
-    }
-    public void setPath(String newPath) {
-        this.path = newPath;
+    public String getMediaId() {
+        return uri.toString();
     }
 
+    public Item withDetails(String newTitle, String newArtist, @Nullable String newPath) {
+        return new Item(newTitle, newArtist, newPath, duration, uri);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Item)) return false;
         Item item = (Item) o;
-        return title.equals(item.title) &&
-                artist.equals(item.artist) &&
-                path.equals(item.path);
+        return Objects.equals(title, item.title)
+                && Objects.equals(artist, item.artist)
+                && Objects.equals(path, item.path)
+                && Objects.equals(duration, item.duration)
+                && Objects.equals(uri, item.uri);
     }
+
     @Override
     public int hashCode() {
-        return Objects.hash(title, artist, path);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(title);
-        dest.writeString(artist);
-        dest.writeString(path);
-        dest.writeString(duration);
-        dest.writeParcelable(uri, flags);
+        return Objects.hash(title, artist, path, duration, uri);
     }
 }

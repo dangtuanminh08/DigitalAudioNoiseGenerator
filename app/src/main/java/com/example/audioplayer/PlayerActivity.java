@@ -1,9 +1,7 @@
 package com.example.audioplayer;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,18 +14,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
+import androidx.media3.common.Timeline;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -37,10 +37,10 @@ import pl.droidsonroids.gif.GifImageView;
 @UnstableApi
 public class PlayerActivity extends AppCompatActivity {
 
-    private ArrayList<String> queue;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean isUserSeeking = false;
     private ExoPlayer player;
+    private PlayerView playerView;
 
     private TextView songTitle, artistName, currentTime, totalTime;
     private SeekBar lengthBar;
@@ -53,9 +53,44 @@ public class PlayerActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (player != null && player.isPlaying()) {
-                lengthBar.setProgress((int) player.getCurrentPosition());
-                currentTime.setText(formatTime(player.getCurrentPosition()));
+                if (!isUserSeeking) {
+                    syncProgress();
+                }
                 handler.postDelayed(this, 1000);
+            }
+        }
+    };
+
+    private final Player.Listener playerListener = new Player.Listener() {
+        @Override
+        public void onIsPlayingChanged(boolean isPlaying) {
+            updatePlaybackIcons(isPlaying);
+        }
+
+        @Override
+        public void onPlaybackStateChanged(int state) {
+            if (state == Player.STATE_READY) {
+                updateDuration();
+            } else if (state == Player.STATE_ENDED) {
+                handler.removeCallbacks(updateRunnable);
+            }
+        }
+
+        @Override
+        public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+            updateSongInfo();
+        }
+
+        @Override
+        public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
+            updateSongInfo();
+        }
+
+        @Override
+        public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPos,
+                                            @NonNull Player.PositionInfo newPos, int reason) {
+            if (!isUserSeeking) {
+                syncProgress();
             }
         }
     };
@@ -68,9 +103,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         initViews();
         initPlayer();
-        handleIntent(getIntent());
         initSeekBar();
-        setupPlayerListeners();
+        player.addListener(playerListener);
+        updateSongInfo();
     }
 
     private void initViews() {
@@ -94,9 +129,9 @@ public class PlayerActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
-        btnPlayPause.setOnClickListener(v -> togglePlayPause());
-        btnNext.setOnClickListener(v -> nextSong());
-        btnPrev.setOnClickListener(v -> prevSong());
+        btnPlayPause.setOnClickListener(v -> PlayerManager.togglePlayPause());
+        btnNext.setOnClickListener(v -> PlayerManager.skipToNext());
+        btnPrev.setOnClickListener(v -> PlayerManager.skipToPrevious());
         btnShuffle.setOnClickListener(v -> toggleShuffle());
         btnRepeat.setOnClickListener(v -> toggleRepeat());
         backButton.setOnClickListener(v -> exitActivity());
@@ -108,26 +143,12 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void initPlayer() {
         player = PlayerManager.getPlayer(this);
-        PlayerView playerView = findViewById(R.id.player_view);
+        playerView = findViewById(R.id.player_view);
         playerView.setPlayer(player);
         playbackSpeedManager = new PlaybackSpeedManager(player);
 
         updateShuffleButton();
         updateRepeatButton();
-    }
-
-    private void handleIntent(Intent intent) {
-        if (intent != null && intent.hasExtra("SONGS")) {
-            queue = intent.getStringArrayListExtra("SONGS");
-            int currentIndex = intent.getIntExtra("CURRENT_INDEX", 0);
-
-            if (player.getCurrentMediaItemIndex() != currentIndex) {
-                PlayerManager.prepareQueue(queue);
-                player.seekTo(currentIndex, 0);
-            } else {
-                updateSongInfo();
-            }
-        }
     }
 
     private void initSeekBar() {
@@ -152,45 +173,10 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void setupPlayerListeners() {
-        player.addListener(new Player.Listener() {
-            @Override
-            public void onIsPlayingChanged(boolean isPlaying) {
-                updatePlaybackIcons(isPlaying);
-            }
-
-            @Override
-            public void onPlaybackStateChanged(int state) {
-                if (state == Player.STATE_READY) {
-                    updateSongInfo();
-                    updateSeekBarAndTime();
-                } else if (state == Player.STATE_ENDED) {
-                    handler.removeCallbacks(updateRunnable);
-                }
-            }
-
-            @Override
-            public void onMediaItemTransition(MediaItem mediaItem, int reason) {
-                updateSongInfo();
-            }
-
-            @Override
-            public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPos,
-                                                @NonNull Player.PositionInfo newPos, int reason) {
-                if (!isUserSeeking) {
-                    lengthBar.setProgress((int) player.getCurrentPosition());
-                    currentTime.setText(formatTime(player.getCurrentPosition()));
-                }
-            }
-        });
-    }
-
-    //Helper function for UI
-
     private void updatePlaybackIcons(boolean isPlaying) {
-        btnPlayPause.setImageDrawable(isPlaying ? playGif : pauseGif);
-        (isPlaying ? playGif : pauseGif).start();
-        NotificationManager.updatePlaybackState(isPlaying ? 3 : 2);
+        GifDrawable gif = isPlaying ? playGif : pauseGif;
+        btnPlayPause.setImageDrawable(gif);
+        gif.start();
 
         if (isPlaying) {
             startUpdatingSeekBar();
@@ -199,29 +185,46 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    //Helper functions for UX
-    private void togglePlayPause() {
-        if (player.isPlaying()) {
-            handler.removeCallbacks(updateRunnable);
-            player.pause();
-        } else {
-            player.play();
+    // Title and artist come from the queue item, so renames show up and the artist is no longer always "unknown".
+    private void updateSongInfo() {
+        CharSequence title = PlayerManager.getCurrentTitle();
+        CharSequence artist = PlayerManager.getCurrentArtist();
+
+        songTitle.setText(title != null ? title : "");
+        artistName.setText(artist != null && artist.length() > 0 ? artist : getString(R.string.unknown_artist));
+
+        updateDuration();
+        syncProgress();
+    }
+
+    private void updateDuration() {
+        long duration = player.getDuration();
+        if (duration <= 0) {
+            lengthBar.setMax(0);
+            totalTime.setText(formatTime(0));
+            return;
         }
+        lengthBar.setMax((int) duration);
+        totalTime.setText(formatTime(duration));
     }
 
-    private void nextSong() {
-        PlayerManager.skipToNext();
+    private void syncProgress() {
+        long position = player.getCurrentPosition();
+        lengthBar.setProgress((int) position);
+        currentTime.setText(formatTime(position));
     }
 
-    private void prevSong() {
-        PlayerManager.skipToPrevious();
+    private void startUpdatingSeekBar() {
+        // Remove first so repeated calls never stack parallel loops.
+        handler.removeCallbacks(updateRunnable);
+        handler.post(updateRunnable);
     }
 
     private void toggleShuffle() {
         boolean enabled = !player.getShuffleModeEnabled();
         player.setShuffleModeEnabled(enabled);
         updateShuffleButton();
-        Toast.makeText(this, enabled ? "Shuffle ON" : "Shuffle OFF", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, enabled ? R.string.shuffle_on : R.string.shuffle_off, Toast.LENGTH_SHORT).show();
     }
 
     private void toggleRepeat() {
@@ -242,49 +245,15 @@ public class PlayerActivity extends AppCompatActivity {
         btnRepeat.setImageResource(icon);
     }
 
-    private String getRepeatModeText(int mode) {
-        return mode == Player.REPEAT_MODE_ONE ? "Repeat song" :
-                mode == Player.REPEAT_MODE_ALL ? "Repeat queue" : "Repeat off";
+    @StringRes
+    private int getRepeatModeText(int mode) {
+        return mode == Player.REPEAT_MODE_ONE ? R.string.repeat_song :
+                mode == Player.REPEAT_MODE_ALL ? R.string.repeat_queue : R.string.repeat_off;
     }
 
     private void exitActivity() {
         handler.removeCallbacks(updateRunnable);
         finish();
-    }
-
-    private void updateSeekBarAndTime() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                long duration = player.getDuration();
-                if (duration > 0) {
-                    lengthBar.setMax((int) duration);
-                    totalTime.setText(formatTime(duration));
-                } else {
-                    handler.postDelayed(this, 100);
-                }
-            }
-        }, 100);
-    }
-
-    private void updateSongInfo() {
-        String path = player.getCurrentMediaItemIndex() >= queue.size() ? queue.get(0) : queue.get(player.getCurrentMediaItemIndex());
-        String name = new File(path).getName().replaceFirst("[.][^.]+$", "");
-
-        songTitle.setText(name);
-        artistName.setText(R.string.unknown_artist);
-        updateSeekBarAndTime();
-        startUpdatingSeekBar();
-
-        PlayerManager.showMediaNotification(name, "( •̀ ω •́ )");
-        NotificationManager.updatePlaybackState(player.isPlaying() ? 3 : 2);
-
-        ItemAdapter itemAdapter = ViewFragment.adapter;
-        itemAdapter.setCurrentPlayingSong(queue.indexOf(path));
-    }
-
-    private void startUpdatingSeekBar() {
-        handler.post(updateRunnable);
     }
 
     private String formatTime(long millis) {
@@ -293,7 +262,6 @@ public class PlayerActivity extends AppCompatActivity {
         return String.format(Locale.CANADA, "%d:%02d", min, sec);
     }
 
-    //Bottom sheet for playback speed and pitch
     private void showBottomSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         ViewGroup root = findViewById(android.R.id.content);
@@ -306,17 +274,15 @@ public class PlayerActivity extends AppCompatActivity {
 
         speedBar.setMax(20);
         pitchBar.setMax(20);
+        speedBar.setMin(1);
+        pitchBar.setMin(1);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            speedBar.setMin(1);
-            pitchBar.setMin(1);
-        }
+        // Round, not truncate: 1.1f * 10f can land just under 11.
+        speedBar.setProgress(Math.round(playbackSpeedManager.getPlaybackSpeed() * 10f));
+        pitchBar.setProgress(Math.round(playbackSpeedManager.getPlaybackPitch() * 10f));
 
-        speedBar.setProgress((int) playbackSpeedManager.getPlaybackSpeed());
-        pitchBar.setProgress((int) playbackSpeedManager.getPlaybackPitch());
-
-        speedText.setText(String.format(Locale.CANADA, "Playback Speed: %.1fx", speedBar.getProgress() / 10f));
-        pitchText.setText(String.format(Locale.CANADA, "Playback Pitch: %.1fx", pitchBar.getProgress() / 10f));
+        speedText.setText(getString(R.string.playback_speed_label, speedBar.getProgress() / 10f));
+        pitchText.setText(getString(R.string.playback_pitch_label, pitchBar.getProgress() / 10f));
 
         speedBar.setOnSeekBarChangeListener(createSpeedPitchListener(speedText, true));
         pitchBar.setOnSeekBarChangeListener(createSpeedPitchListener(pitchText, false));
@@ -332,12 +298,14 @@ public class PlayerActivity extends AppCompatActivity {
                 float value = progress / 10f;
                 if (isSpeed) playbackSpeedManager.setPlaybackSpeed(value);
                 else playbackSpeedManager.setPlaybackPitch(value);
-                label.setText(String.format(Locale.CANADA, "%s: %.1fx", isSpeed ? "Playback Speed" : "Playback Pitch", value));
+                label.setText(getString(isSpeed ? R.string.playback_speed_label : R.string.playback_pitch_label, value));
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar bar) {
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar bar) {
             }
         };
@@ -349,12 +317,10 @@ public class PlayerActivity extends AppCompatActivity {
         handler.removeCallbacks(updateRunnable);
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
-        if (player != null && player.isPlaying()) {
-            startUpdatingSeekBar();
-        }
-        assert player != null;
+        updateSongInfo();
         updatePlaybackIcons(player.isPlaying());
     }
 
@@ -362,6 +328,9 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(updateRunnable);
+        player.removeListener(playerListener);
+        // PlayerView registers its own listener on the singleton player. Detach it or it leaks this activity.
+        playerView.setPlayer(null);
         if (playGif != null) playGif.recycle();
         if (pauseGif != null) pauseGif.recycle();
     }

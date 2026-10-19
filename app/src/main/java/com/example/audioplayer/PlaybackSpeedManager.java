@@ -1,6 +1,7 @@
 package com.example.audioplayer;
 
-import androidx.media3.common.PlaybackParameters;
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 
 public class PlaybackSpeedManager {
@@ -10,28 +11,20 @@ public class PlaybackSpeedManager {
         this.player = player;
     }
 
-    private float pitch = 1.0f;
-    private float speed = 1.0f;
-
-    public void setPlaybackSpeed(float speedIn) {
-        speed = speedIn;
-        PlaybackParameters playbackParameters = new PlaybackParameters(speed, pitch);
-        player.setPlaybackParameters(playbackParameters);
+    public void setPlaybackSpeed(float speed) {
+        player.setPlaybackParameters(player.getPlaybackParameters().withSpeed(speed));
     }
 
-    public void setPlaybackPitch(float pitchIn) {
-        pitch = pitchIn;
-        PlaybackParameters playbackParameters = new PlaybackParameters(speed, pitch);
-        player.setPlaybackParameters(playbackParameters);
+    @OptIn(markerClass = UnstableApi.class)
+    public void setPlaybackPitch(float pitch) {
+        player.setPlaybackParameters(player.getPlaybackParameters().withPitch(pitch));
     }
 
     public float getPlaybackSpeed() {
-        float speed = player.getPlaybackParameters().speed;
-        return speed * 10f;
+        return player.getPlaybackParameters().speed;
     }
 
     public float getPlaybackPitch() {
-        float pitch = player.getPlaybackParameters().pitch;
-        return pitch * 10f;
+        return player.getPlaybackParameters().pitch;
     }
 }

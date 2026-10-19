@@ -1,10 +1,45 @@
 <resources>
     <string name="app_name" translatable="false">DANG!</string>
-    <string name="unknown_artist" translatable="false">( •̀ ω •́ )</string>
+
     <string name="unknown_title" translatable="false">( •̀ ω •́ )</string>
     <string name="beginning_notif_message">Play a song to use this notification!</string>
     <string name="rename">Rename</string>
-    <string name="delete">Delete</string>
     <string name="title_hint">Enter new name</string>
     <string name="artist_hint">Enter new artist</string>
+
+    <string name="unknown_artist">( •̀ ω •́ )</string>
+    <string name="permission_denied_toast">No music for you then!! 😂</string>
+    <string name="song_count">Number of songs: %1$d</string>
+
+    <string name="shuffle_on">Shuffle ON</string>
+    <string name="shuffle_off">Shuffle OFF</string>
+    <string name="repeat_song">Repeat song</string>
+    <string name="repeat_queue">Repeat queue</string>
+    <string name="repeat_off">Repeat off</string>
+    <string name="playback_speed_label">Playback Speed: %1$.1fx</string>
+    <string name="playback_pitch_label">Playback Pitch: %1$.1fx</string>
+
+    <string name="rename_title">Rename File</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="deleted_successfully">Deleted successfully</string>
+    <string name="rename_permission_failed">Rename permission failed</string>
+    <string name="delete_permission_failed">Delete permission failed</string>
+    <string name="rename_success">Renamed successfully</string>
+    <string name="rename_failed">Rename failed</string>
+    <string name="rename_exists">A file with this name already exists</string>
+    <string name="file_not_found">File not found</string>
+    <string name="permission_required_modify">Permission required to modify this file</string>
+    <string name="error_retrieving">Error retrieving music files</string>
+    <string name="error_with_message">Error: %1$s</string>
+
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_previous">Previous</string>
+    <string name="action_next">Next</string>
+    <string name="action_release">Release</string>
+    <string name="channel_name">DANG! Playback</string>
+    <string name="channel_description">Audio Player Channel</string>
 </resources>

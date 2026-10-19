@@ -1,6 +1,5 @@
 package com.example.audioplayer;
 
-import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_MEDIA_AUDIO;
 
@@ -9,34 +8,34 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
+import androidx.media3.common.Timeline;
+import androidx.media3.common.util.Log;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
@@ -44,51 +43,72 @@ import pl.droidsonroids.gif.GifImageView;
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PERMISSION_REQUEST_CODE = 1001;
+    static final String EXTRA_RELEASE_PLAYER = "com.example.audioplayer.extra.RELEASE_PLAYER";
 
     private ExoPlayer player;
     private MusicViewModel viewModel;
-    private final List<Item> queue = new ArrayList<>();
 
     private LinearLayout miniPlayer;
-    private TextView miniSongTitle, miniSongArtist;
+    private TextView miniSongTitle, miniSongArtist, songCountText;
     private GifImageView miniPlayPause;
     private GifDrawable playGif, pauseGif;
 
-    private final Observer<List<Item>> musicFilesObserver = items -> {
-        queue.clear();
-        queue.addAll(items);
-        ((TextView) findViewById(R.id.textView)).setText(
-                String.format(Locale.CANADA, "Number of songs: %d", queue.size())
-        );
+    private final ActivityResultLauncher<String> audioPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    viewModel.loadMusicFiles();
+                } else {
+                    Toast.makeText(this, R.string.permission_denied_toast, Toast.LENGTH_SHORT).show();
+                }
+                requestNotificationPermission();
+            });
+
+    private final ActivityResultLauncher<String> notificationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                // No notification will be shown. Playback will still work
+            });
+    private final Player.Listener playerListener = new Player.Listener() {
+        @Override
+        public void onIsPlayingChanged(boolean isPlaying) {
+            setPlayPauseIcon(isPlaying);
+        }
+
+        @OptIn(markerClass = UnstableApi.class)
+        @Override
+        public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
+            updateMiniPlayer();
+        }
+
+        @Override
+        public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
+            updateMiniPlayer();
+        }
     };
 
-    @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        player = PlayerManager.getPlayer(this);
-        if (ForegroundService.getNotification() == null) {
-            PlayerManager.showMediaNotification(getString(R.string.unknown_title), getString(R.string.beginning_notif_message));
-        }
-        if (!ForegroundService.isRunning()) {
-            Intent serviceIntent = new Intent(this, ForegroundService.class);
-            ContextCompat.startForegroundService(this, serviceIntent);
+        if (savedInstanceState == null && getIntent().getBooleanExtra(EXTRA_RELEASE_PLAYER, false)) {
+            getIntent().removeExtra(EXTRA_RELEASE_PLAYER);
+            PlayerManager.shutdown(this);
         }
 
+        player = PlayerManager.getPlayer(this);
         viewModel = new ViewModelProvider(this).get(MusicViewModel.class);
+        songCountText = findViewById(R.id.textView);
+
         setupInsets();
         setupFragment();
         setupMiniPlayerView();
         initGifs();
 
-        viewModel.getMusicFiles().observe(this, musicFilesObserver);
+        viewModel.getMusicFiles().observe(this, items ->
+                songCountText.setText(getString(R.string.song_count, items == null ? 0 : items.size())));
 
         checkAndRequestPermissions();
-        setupPlayerListeners();
     }
 
     private void setupInsets() {
@@ -107,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
     }
-    //Sets up mini player at the bottom
+
     @OptIn(markerClass = UnstableApi.class)
     private void setupMiniPlayerView() {
         miniPlayer = findViewById(R.id.mini_player);
@@ -115,19 +135,16 @@ public class MainActivity extends AppCompatActivity {
         miniSongArtist = findViewById(R.id.mini_song_artist);
         miniPlayPause = findViewById(R.id.mini_play_pause);
 
-        miniPlayPause.setOnClickListener(v -> togglePlayback());
+        miniPlayPause.setOnClickListener(v -> PlayerManager.togglePlayPause());
 
         miniPlayer.setOnClickListener(v -> {
             Context context = v.getContext();
             Intent intent = new Intent(context, PlayerActivity.class);
-            intent.putStringArrayListExtra("SONGS", PlayerManager.getQueue());
-            intent.putExtra("CURRENT_INDEX", PlayerManager.getCurrentSongIndex());
             ActivityOptionsCompat options = ActivityOptionsCompat.makeCustomAnimation(context, R.anim.slide_up, 0);
             context.startActivity(intent, options.toBundle());
         });
     }
 
-    //Loads GIFs for use
     private void initGifs() {
         try {
             playGif = new GifDrawable(getResources(), R.drawable.play);
@@ -137,83 +154,46 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void togglePlayback() {
-        if (player == null) return;
-        if (player.isPlaying()) {
-            player.pause();
-            miniPlayPause.setImageDrawable(pauseGif);
-            pauseGif.start();
-        } else {
-            player.play();
-            miniPlayPause.setImageDrawable(playGif);
-            playGif.start();
-        }
+    private void setPlayPauseIcon(boolean isPlaying) {
+        GifDrawable gif = isPlaying ? playGif : pauseGif;
+        miniPlayPause.setImageDrawable(gif);
+        gif.start();
     }
 
-    private void setupPlayerListeners() {
-        player.addListener(new Player.Listener() {
-            @Override
-            public void onIsPlayingChanged(boolean isPlaying) {
-                miniPlayPause.setImageDrawable(isPlaying ? playGif : pauseGif);
-                if (isPlaying) playGif.start();
-            }
-
-            @Override
-            public void onMediaItemTransition(@Nullable MediaItem mediaItem, int reason) {
-                updateMiniPlayer();
-            }
-        });
-    }
-
-    //Checks for permissions and requests if needed
     private void checkAndRequestPermissions() {
-        List<String> permissionsNeeded = new ArrayList<>();
-        if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(READ_MEDIA_AUDIO);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(POST_NOTIFICATIONS);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            permissionsNeeded.add(BLUETOOTH_CONNECT);
-        }
-
-        if (permissionsNeeded.isEmpty()) {
-            viewModel.loadMusicFiles();
+        if (ContextCompat.checkSelfPermission(this, READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            if (viewModel.getMusicFiles().getValue() == null) {
+                viewModel.loadMusicFiles();
+            }
+            requestNotificationPermission();
         } else {
-            ActivityCompat.requestPermissions(this,
-                    permissionsNeeded.toArray(new String[0]),
-                    PERMISSION_REQUEST_CODE);
+            audioPermissionLauncher.launch(READ_MEDIA_AUDIO);
         }
     }
 
-    //Handles permissions
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            boolean allGranted = true;
-            for (int result : grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false;
-                    break;
-                }
-            }
-            if (allGranted) {
-                viewModel.loadMusicFiles();
-            } else {
-                Toast.makeText(this, "No music for you then!! 😂", Toast.LENGTH_SHORT).show();
-            }
+    private void requestNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(POST_NOTIFICATIONS);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        player.addListener(playerListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        player.removeListener(playerListener);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateMiniPlayer();
-        if (player != null && miniPlayer.getVisibility() == View.VISIBLE) {
+        if (miniPlayer.getVisibility() == View.VISIBLE) {
             (player.isPlaying() ? playGif : pauseGif).start();
         }
     }
@@ -224,24 +204,33 @@ public class MainActivity extends AppCompatActivity {
         playGif.stop();
         pauseGif.stop();
     }
+
     private void updateMiniPlayer() {
-        if (player == null || player.getCurrentMediaItem() == null || queue.isEmpty()) {
+        MediaItem current = player.getCurrentMediaItem();
+        if (current == null) {
             miniPlayer.setVisibility(View.GONE);
             return;
         }
 
-        int index = player.getCurrentMediaItemIndex();
-        if (index >= queue.size()) index = 0;
-        Item currentItem = queue.get(index);
+        CharSequence title = current.mediaMetadata.title;
+        CharSequence artist = current.mediaMetadata.artist;
 
-        if (currentItem.getTitle().contentEquals(miniSongTitle.getText()) &&
-                currentItem.getArtist().contentEquals(miniSongArtist.getText())) {
-            return; // No update needed
+        if (miniPlayer.getVisibility() == View.VISIBLE
+                && TextUtils.equals(title, miniSongTitle.getText())
+                && TextUtils.equals(artist, miniSongArtist.getText())) {
+            return;
         }
 
-        miniSongTitle.setText(currentItem.getTitle());
-        miniSongArtist.setText(currentItem.getArtist());
+        miniSongTitle.setText(title);
+        miniSongArtist.setText(artist);
         miniPlayer.setVisibility(View.VISIBLE);
-        miniPlayPause.setImageDrawable(player.isPlaying() ? playGif : pauseGif);
+        setPlayPauseIcon(player.isPlaying());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (playGif != null) playGif.recycle();
+        if (pauseGif != null) pauseGif.recycle();
     }
 }

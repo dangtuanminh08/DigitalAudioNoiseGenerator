@@ -1,53 +1,79 @@
 package com.example.audioplayer;
 
-import android.app.Notification;
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.ServiceInfo;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
-
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
 
 public class ForegroundService extends Service {
-    private static Notification notification;
-    private static boolean isRunning;
-    private BluetoothReceiver bluetoothReceiver;
-    private boolean isReceiverRegistered = false;
+
+    static final String ACTION_PLAY_PAUSE = "com.example.audioplayer.action.PLAY_PAUSE";
+    static final String ACTION_NEXT = "com.example.audioplayer.action.NEXT";
+    static final String ACTION_PREVIOUS = "com.example.audioplayer.action.PREVIOUS";
+
+    private ExoPlayer boundPlayer;
+    private boolean isForeground = false;
+
+    private final Player.Listener playerListener = new Player.Listener() {
+        @Override
+        public void onPlayWhenReadyChanged(boolean playWhenReady, int reason) {
+            updateForegroundState();
+        }
+
+        @Override
+        public void onPlaybackStateChanged(int playbackState) {
+            updateForegroundState();
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        bluetoothReceiver = new BluetoothReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        registerReceiver(bluetoothReceiver, filter);
-        isReceiverRegistered = true;
-        PlayerManager.getPlayer(getApplicationContext());
-        isRunning = true;
-    }
-
-    public static Notification getNotification() {
-        return notification;
+        boundPlayer = PlayerManager.getPlayer(getApplicationContext());
+        boundPlayer.addListener(playerListener);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        notification = NotificationManager.getNotification();
-
-        if (notification != null) {
-            startForeground(1, notification);
-        } else {
-            stopSelf(); //Stop if notification is not ready
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                    PlaybackNotificationManager.NOTIFICATION_ID,
+                    PlayerManager.buildNotification(this),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         }
-        return START_STICKY;
+        isForeground = true;
+
+        String action = intent != null ? intent.getAction() : null;
+        if (ACTION_PLAY_PAUSE.equals(action)) {
+            PlayerManager.togglePlayPause();
+        } else if (ACTION_NEXT.equals(action)) {
+            PlayerManager.skipToNext();
+        } else if (ACTION_PREVIOUS.equals(action)) {
+            PlayerManager.skipToPrevious();
+        }
+
+        updateForegroundState();
+        return START_NOT_STICKY;
     }
 
+    private void updateForegroundState() {
+        if (!isForeground || boundPlayer == null) return;
 
-    public static boolean isRunning() {
-        return isRunning;
+        int state = boundPlayer.getPlaybackState();
+        boolean active = boundPlayer.getPlayWhenReady()
+                && state != Player.STATE_IDLE
+                && state != Player.STATE_ENDED;
+
+        if (!active) {
+            boolean queueEmpty = boundPlayer.getCurrentMediaItem() == null;
+            stopForeground(queueEmpty ? STOP_FOREGROUND_REMOVE : STOP_FOREGROUND_DETACH);
+            isForeground = false;
+        }
     }
 
     @Nullable
@@ -59,10 +85,10 @@ public class ForegroundService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (isReceiverRegistered) {
-            unregisterReceiver(bluetoothReceiver);
-            isReceiverRegistered = false;
+        if (boundPlayer != null) {
+            boundPlayer.removeListener(playerListener);
+            boundPlayer = null;
         }
-        isRunning = false;
+        isForeground = false;
     }
 }
